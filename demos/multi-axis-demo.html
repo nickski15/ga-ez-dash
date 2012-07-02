@@ -1,0 +1,101 @@
+<!DOCTYPE>
+<html>
+<head><title>EZ Dash Multi Axis Demo</title></head>
+<body>
+  <h1>EZ-Dash Multi-Axis Demo</h1>
+  <p>This is a simple demo for the
+     <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+       ga-dash library</a>.</p>
+
+  <p>This demo shows how to display multiple axis on the line chart.</p>
+
+  <!-- Display the user interface -->
+  <button id="authorize-button" style="visibility:hidden">Authorize Analytics</button>
+
+  <hr>
+  <p>Enter your Table ID: <input type="text" id="tableId">
+     <button onclick="renderGraph()">Draw Charts</button><br>
+     (Format ga:xxx where xxx is your profile ID)
+  </p>
+  <hr>
+  <div id="ui" style="display:none">
+    <h3>Time On Site vs. Pageviews - Over Time</h3>
+    <div id='dataOverTimeConfig'></div>
+
+  <div>
+
+  <!-- Load all libraries and run some JS code -->
+  <script src="https://www.google.com/jsapi"></script>
+  <script src="../src/gadash-1.0.js"></script>
+  <script src="https://apis.google.com/js/client.js?onload=gadashInit"></script>
+  <script>
+  gadash.configKeys({
+    'apiKey': 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+    'clientId':'821751250764.apps.googleusercontent.com'
+  });
+
+  var COLOR_1 = '#133F96';
+  var COLOR_2 = '#EA7058';
+
+  // Create new Chart.
+  var dataOverTime = new gadash.Chart();
+
+  // Configuration for data over time graph.
+  dataOverTime.set({
+    'divContainer': 'dataOverTimeConfig',
+    'last-n-days': 30,
+    'type': 'LineChart',
+    'query': {
+      'metrics': 'ga:timeOnSite, ga:pageviews',
+      'dimensions': 'ga:date',
+      'sort': 'ga:date'
+    },
+    'chartOptions': {
+      height: 300,
+      width: 700,
+      legend: {position: 'top', alignment: 'center'},
+      hAxis: {title:'Date'},
+      curveType: 'function',
+
+      /* 
+       * Code to set multiple axis.
+       * targetaxisIndex: 1 specifes that the selected
+       * series should be visualised on the second axis.
+      */
+      series: [
+        {color: COLOR_1},
+        {color: COLOR_2, targetAxisIndex: 1}
+      ],
+
+      /*
+       * Code to configure multiple axis.
+       */
+      vAxes:[
+       {title:'time on site', textStyle: {color: COLOR_1}},
+       {title:'pageviews', textStyle: {color: COLOR_2}}
+      ]
+    }
+  });
+
+  /**
+   * Handler for the run demo button.
+   * Uses the table ID in the form to update the baseConfig object. Then
+   * sets baseConfig into each of the charts. Then each chart's specific
+   * configuration parameters are set. Finally all are rendered.
+   */
+  function renderGraph() {
+     // Add the table id to the base configuration object.
+     var config = {
+       'query': {
+         'ids': document.getElementById('tableId').value
+       }
+     };
+
+     dataOverTime.set(config).render();
+
+     // Display UI.
+     document.getElementById('ui').style.display = 'block';
+   }
+  </script>
+</body>
+</html>
