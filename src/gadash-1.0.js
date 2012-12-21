@@ -30,7 +30,7 @@
 
 
 // Loads the core chart and table from the Google Visualization.
-google.load('visualization', '1', {'packages': ['corechart', 'table']});
+//google.load('visualization', '1', {'packages': ['corechart', 'table']});
 
 
 /**
@@ -71,6 +71,14 @@ gadash.SCOPES = [
  * @type {Array}
  */
 gadash.commandQueue = [];
+
+
+/**
+ * Variable to store a global callback. Used when loading Javascript
+ * resources that support defining their own callback in the URL.
+ * Should be used in conjunction with gadash.util.loadJs_ function..
+ */
+window.__globalCallback = {};
 
 
 /**
@@ -662,4 +670,89 @@ gadash.util.htmlEscape = function(str) {
   }
   return str;
 };
+
+
+/**
+ * Asynchronously loads a single JavaScript resource. If defined,
+ * opt_callback is executed once the resource is done loading.
+ * @param {String} url The JavaScript resource to load.
+ * @param {?String} opt_callback Optional JavaScript function to execute once
+ *     the JavaScript resource has loaded.
+ */
+gadash.util.loadJs_Resource = function(url, opt_callback) {
+  var js = document.createElement('script');
+  js.async = true;
+  js.src = url;
+  if (opt_callback) {
+    js.onload = opt_callback;
+  }
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(js, s);
+};
+
+
+/**
+ * Loads multiple JavaScript resources and executes finalCallback
+ * once all are done loading. Some resources require a callback
+ * function to be defined in the URL. These resources can be loaded
+ * by setting opt_useGlobal to true, then using the global variable
+ * __globalCallback as the name of the callback function in the URI.
+ * @param {Array.<String>} urls An array of URLs of JavaScript resources
+ *     to load.
+ * @param {Function} finalCallback The function to execute once all the
+ *     JavaScript resources have loaded.
+ * @param {Boolean} opt_useGlobal If all the callbacks should use a
+ *     single global function. This is useful if the JavaScript resources
+ *     require defining the callback in the URL itself.
+ * @private.
+ */
+gadash.util.loadJs_ = function(urls, finalCallback, opt_useGlobal) {
+  var callback = gadash.getIncrementalCallback(urls.length, finalCallback);
+  if (opt_useGlobal) {
+    window.__globalCallback = callback;
+  }
+  for (var i = 0, url; url = urls[i]; ++i) {
+    if (opt_useGlobal) {
+      gadash.util.loadJs_Resource(url);
+    } else {
+      gadash.util.loadJs_Resource(url, callback);
+    }
+  }
+};
+
+
+/**
+ * Returns a function that can be executed numberOfCallbacks times before
+ * finalCallback is executed.
+ * @param {Number} numberOfCallbacks The number of times this function
+ *     should execute. Incremented for each execution.
+ * @param {Function} finalCallback The function to execute once
+ *     once numberOfCallbacks execution times have been reached.
+ * @return {Function} A function that can be excuted numberOfCallbacks
+ *     times before finalCallback is executed.
+ */
+gadash.getIncrementalCallback = function(numberOfCallbacks, finalCallback) {
+  var callbackCount = 0;
+
+  return function() {
+    ++callbackCount;
+    if (callbackCount >= numberOfCallbacks) {
+      finalCallback();
+    }
+  };
+};
+
+
+/**
+ * Dynamically loads the Google Visualization, and Google JavaScript API
+ * Client library. Once both are done loading, the window.gadashInit method
+ * is executed.
+ */
+gadash.util.loadJs_([
+  'https://www.google.com/jsapi?autoload=' + encodeURIComponent(
+      '{"modules":[{"name":"visualization","version":"1",' +
+      '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
+  'https://apis.google.com/js/client.js?onload=__globalCallback'
+], window.gadashInit, true);
+
 
