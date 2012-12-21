@@ -33,22 +33,36 @@
 google.load('visualization', '1', {'packages': ['corechart', 'table']});
 
 
-// Create namespace for this library if not already created.
+/**
+ * Namespace for this library if not already created.
+ */
 var gadash = gadash || {};
 
 
-// Namespace for util object. Contains lots of library utilities.
+/**
+ * Namespace for util object. Contains lots of library utilities.
+ */
 gadash.util = gadash.util || {};
 
-// Boolean that checks to see if gapi client is loaded.
+
+/**
+ * Stoes user information returned from the OAuth API.
+ */
+gadash.userInfo = {};
+
+
+/**
+ * Boolean that checks to see if gapi client is loaded.
+ */
 gadash.isLoaded = false;
 
 /**
- * Refers to the Google Analytics API scope that the user will need
- * authentication for.
- * @const {String}
+ * An array for all the oauth2 scopes to authorize the user for.
+ * @const {Array}
  */
-gadash.SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
+gadash.SCOPES = [
+  'https://www.googleapis.com/auth/analytics.readonly',
+  'https://www.googleapis.com/auth/userinfo.email'];
 
 
 /**
@@ -89,7 +103,7 @@ gadash.configKeys = function(settings) {
 gadash.checkAuth = function() {
   gapi.auth.authorize({
     client_id: gadash.clientId,
-    scope: gadash.SCOPE,
+    scope: gadash.SCOPES,
     immediate: true}, gadash.handleAuthResult);
 };
 
@@ -97,7 +111,7 @@ gadash.checkAuth = function() {
 /**
  * Handler that is called once the script has checked to see if the user has
  * authorized access to their Google Analytics data. If the user has authorized
- * access, the analytics api library is loaded and the handleAuthorized
+ * access, the analytics api library is loaded and the loadUserName
  * function is executed. If the user has not authorized access to their data,
  * the handleUnauthorized function is executed.
  * @param {Object} authResult The result object returned form the authorization
@@ -107,10 +121,25 @@ gadash.checkAuth = function() {
 gadash.handleAuthResult = function(authResult) {
   if (authResult) {
     gapi.client.setApiVersions({'analytics': 'v3'});
-    gapi.client.load('analytics', 'v3', gadash.handleAuthorized);
+    gapi.client.load('analytics', 'v3', gadash.loadUserName);
   } else {
     gadash.handleUnAuthorized();
   }
+};
+
+
+/**
+ * Loads user information including the email address of the currently logged
+ * in user from the OAuth API. Once loaded, the response is stored and
+ * handleAuthorized is called.
+ */
+gadash.loadUserName = function() {
+  gapi.client.request({
+    'path': '/oauth2/v2/userinfo'
+  }).execute(function(response) {
+    gadash.userInfo = response;
+    gadash.handleAuthorized();
+  });
 };
 
 
@@ -121,8 +150,18 @@ gadash.handleAuthResult = function(authResult) {
  * command queue only happens once.
  */
 gadash.handleAuthorized = function() {
-  var authorizeButton = document.getElementById('authorize-button');
-  authorizeButton.style.visibility = 'hidden';
+
+  var status = 'You are authorized';
+  if (gadash.userInfo.email) {
+    status += ' as ' + gadash.util.htmlEscape(gadash.userInfo.email);
+  }
+
+  document.getElementById('gadash-auth').innerHTML =
+      status + ' <button id="authorize-button">Logout</button>';
+
+  document.getElementById('authorize-button').onclick = function() {
+    document.location = 'https://accounts.google.com/logout';
+  };
 
   gadash.isLoaded = true;
   gadash.executeCommandQueue();
@@ -136,9 +175,9 @@ gadash.handleAuthorized = function() {
  * click handler to the authorize-button.
  */
 gadash.handleUnAuthorized = function() {
-  var authorizeButton = document.getElementById('authorize-button');
-  authorizeButton.style.visibility = '';
-  authorizeButton.onclick = gadash.handleAuthClick;
+  document.getElementById('gadash-auth').innerHTML =
+      '<button id="authorize-button">Authorize Analytics</button>';
+  document.getElementById('authorize-button').onclick = gadash.handleAuthClick;
 };
 
 
@@ -150,7 +189,7 @@ gadash.handleUnAuthorized = function() {
 gadash.handleAuthClick = function(event) {
   gapi.auth.authorize({
     client_id: gadash.clientId,
-    scope: gadash.SCOPE,
+    scope: gadash.SCOPES,
     immediate: false}, gadash.handleAuthResult);
   return false;
 };
@@ -171,7 +210,7 @@ gadash.executeCommandQueue = function() {
  * A Chart accepts an optional configuration object that contains all the
  * parameters of the chart. Also changes start and end date of
  * the query, if last-n-days is set in the config.
- * @param {?Object} config - Contains all configuration variables
+ * @param {?Object} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -249,8 +288,7 @@ gadash.Chart.prototype.renderFunction = function() {
   }
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
-}
-
+};
 
 
 /**
@@ -330,6 +368,7 @@ gadash.Chart.prototype.defaultOnSuccess = function(resp) {
  *     how to parse the API results into a data table.
  * @return {Object} data - A Google DataTable object populated
  *     with the GA response data.
+ * @this references the Chart object.
  */
 gadash.util.getDataTable = function(resp, opt_chartType) {
 
@@ -384,7 +423,7 @@ gadash.util.getDataTable = function(resp, opt_chartType) {
         arrayMetrics.push(gadash.util.stringToDate(resp.rows[i][j]));
       } else if (dataType == 'INTEGER') {
         arrayMetrics.push(parseInt(resp.rows[i][j]));
-      } else if (dataType == 'CURRENCY' ) {
+      } else if (dataType == 'CURRENCY') {
         arrayMetrics.push(parseFloat(resp.rows[i][j]));
       } else if (dataType == 'PERCENT' || dataType == 'TIME' ||
           dataType == 'FLOAT') {
@@ -398,7 +437,7 @@ gadash.util.getDataTable = function(resp, opt_chartType) {
 
   /*
    * Iterates through each column in the data table and formats
-   * any column that has a CURRENCY datatype to two decimal places 
+   * any column that has a CURRENCY datatype to two decimal places
    * and a '$' before the amount.
    */
   for (var i = 0; i < numOfColumns; i++) {
@@ -438,7 +477,7 @@ gadash.util.getChart = function(id, chartType) {
  * @param {Object} chart - The Chart instance you wish to draw the data into.
  * @param {Object} dataTable - The Google DataTable object holding
  *     the response data.
- * @param {Object} options - The optional configuration parameters to pass
+ * @param {Object} chartOptions - The optional configuration parameters to pass
  *     into the chart.
  */
 gadash.util.draw = function(chart, dataTable, chartOptions) {
@@ -562,12 +601,13 @@ gadash.util.extend = function(from, to) {
       to[key] = from[key];
     }
   }
-}
+};
 
 
 /**
  * Returns the native type (class property) of this object.
- * General idea grabbed from here: http://perfectionkills.com/instanceof-considered-harmful-or-how-to-write-a-robust-isarray/
+ * General idea grabbed from here: http://perfectionkills.com/
+ *     instanceof-considered-harmful-or-how-to-write-a-robust-isarray/
  * Per ECMA-262:
  *
  *     15.2.4.2 Object.prototype.toString ( )
@@ -578,7 +618,7 @@ gadash.util.extend = function(from, to) {
  *     3. Return Result(2).
  *
  * @param {Object} value Any type.
- * @returns {String} The lower class property of the object. Undefined if value
+ * @return {String} The lower class property of the object. Undefined if value
  *     is undefined or null.
  */
 gadash.util.getType = function(value) {
@@ -592,5 +632,34 @@ gadash.util.getType = function(value) {
     '[object RegExp]': 'regex',
     '[object Object]' : 'object'
   })[classStringName];
-}
+};
+
+
+/**
+ * HTML escapes the input string by converting the &, <, > and " characters
+ * to their HTML escaped version. Taken from the code in the closure string
+ * library.
+ * @param {String} str The string to convert.
+ * @return {String} The escaped string.
+ */
+gadash.util.htmlEscape = function(str) {
+  var allRe = /[&<>\"]/;
+  if (!allRe.test(str)) {
+    return str;
+  }
+
+  if (str.indexOf('&') != -1) {
+    str = str.replace(/&/g, '&amp;');
+  }
+  if (str.indexOf('<') != -1) {
+    str = str.replace(/</g, '&lt;');
+  }
+  if (str.indexOf('>') != -1) {
+    str = str.replace(/>/g, '&gt;');
+  }
+  if (str.indexOf('"') != -1) {
+    str = str.replace(/"/g, '&quot;');
+  }
+  return str;
+};
 
