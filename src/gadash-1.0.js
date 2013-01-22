@@ -285,30 +285,38 @@ gadash.Chart.prototype.render = function() {
 
 /**
  * Makes a request to the Google Analytics API.
- * Updates the start and end date if last-n-days
- * has been set. If neither start not end date is set, a default of the last
- * 28 days is sued.
- * The function also creates and executes a Google Analytics
+ * Updates the default dates.
+ * Next, the function also creates and executes a Google Analytics
  * API request using the Chart objects callback method. The callback
  * is bound to the Chart instance so a reference back to this chart is
  * maintained within the callback.
  */
 gadash.Chart.prototype.renderFunction = function() {
-
-  // Update the start and end dates based on last n days.
-  if (this.config['last-n-days']) {
-    this.config.query['end-date'] = gadash.util.lastNdays(0);
-    this.config.query['start-date'] =
-        gadash.util.lastNdays(this.config['last-n-days']);
-  } else {
-    if (!this.config.query['start-date'] || !this.config.query['end-date']) {
-      // Provide a default date range of last 28 days.
-      this.config.query['end-date'] = gadash.util.lastNdays(0);
-      this.config.query['start-date'] = gadash.util.lastNdays(28);
-    }
-  }
+  this.setDefaultDates(this.config);
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
+};
+
+
+/**
+ * Handles setting default and last-n-days dates.
+ * If last-n-days has been set, Updates the start and end date.
+ * If neither start not end date is set, a default of the last
+ * 28 days is used.
+ * @param {Object} config A config object.
+ */
+gadash.Chart.prototype.setDefaultDates = function(config) {
+  if (config['last-n-days']) {
+    config.query['end-date'] = gadash.util.lastNdays(0);
+    config.query['start-date'] =
+        gadash.util.lastNdays(this.config['last-n-days']);
+  } else {
+    if (!config.query['start-date'] || !config.query['end-date']) {
+      // Provide a default date range of last 28 days.
+      config.query['end-date'] = gadash.util.lastNdays(0);
+      config.query['start-date'] = gadash.util.lastNdays(28);
+    }
+  }
 };
 
 
