@@ -14,15 +14,14 @@
  */
 
 /**
- * @author
- * Shan Aminzadeh, shan.aminzadeh@gmail.com
- * Arya Bondarian, aryabond@gmail.com
- * Albert Gau, agau@uci.edu
- * Travis Lai, travisrlai@gmail.com
- * Daniel Nguyen, danielnuwin@gmail.com
- * Nick Mihailovski, api.nickm@gmail.com
- * Laurent Jacquot, laurent1jacquot@gmail.com
- * Osama Ahmad, ooahmad@gmail.com
+ * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
+ * @author aryabond@gmail.com (Arya Bondarian)
+ * @author agau@uci.edu (Albert Gau)
+ * @author travisrlai@gmail.com (Travis Lai)
+ * @author danielnuwin@gmail.com (Daniel Nguyen)
+ * @author api.nickm@gmail.com (Nick Mihailovski)
+ * @author laurent1jacquot@gmail.com (Laurent Jacquot)
+ * @author ooahmad@gmail.com (Osama Ahmad)
  *
  * @fileoverview
  * This library is designed to create an easier way to build a custom
@@ -60,6 +59,7 @@ gadash.userInfo = {};
  * Boolean that checks to see if gapi client is loaded.
  */
 gadash.isLoaded = false;
+
 
 /**
  * An array for all the oauth2 scopes to authorize the user for.
@@ -218,12 +218,13 @@ gadash.executeCommandQueue = function() {
 };
 
 
+
 /**
  * A Chart object is the primary object in this library.
  * A Chart accepts an optional configuration object that contains all the
  * parameters of the chart. Also changes start and end date of
  * the query, if last-n-days is set in the config.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -381,7 +382,7 @@ gadash.Chart.prototype.defaultOnError = function(message) {
  * response is put into a DataTable object Second, the corresponding chart
  * is returned. The two are then combined to draw a chart that is populated
  * with the GA data.
- * @param {Object} resp - A Google Analytics API JSON response.
+ * @param {Object} resp A Google Analytics API JSON response.
  */
 gadash.Chart.prototype.defaultOnSuccess = function(resp) {
   var dataTable = gadash.util.getDataTable(resp, this.config.type);
@@ -392,10 +393,10 @@ gadash.Chart.prototype.defaultOnSuccess = function(resp) {
 
 /**
  * Creates a DataTable object using a GA response.
- * @param {Object} resp - A Google Analytics response.
- * @param {?String} opt_chartType - The chart type. Provides a hint on
+ * @param {Object} resp A Google Analytics response.
+ * @param {String=} opt_chartType The chart type. Provides a hint on
  *     how to parse the API results into a data table.
- * @return {Object} data - A Google DataTable object populated
+ * @return {Object} data A Google DataTable object populated
  *     with the GA response data.
  * @this references the Chart object.
  */
@@ -530,7 +531,7 @@ gadash.util.convertDateFormat = function(dataTable) {
   //Checks if the string object is representing a date with the format YYYYMMDD
   var datePattern = /^(20)\d{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$/;
   if (isStrDate.search(datePattern) == 0) {
-      dataTable = gadash.util.convertToMMMd(dataTable);
+    dataTable = gadash.util.convertToMMMd(dataTable);
   }
 };
 
@@ -544,15 +545,15 @@ gadash.util.convertDateFormat = function(dataTable) {
  *     with the GA response data and modified string date format.
  */
 gadash.util.convertToMMMd = function(dTable) {
-   var numberOfRows = dTable.getNumberOfRows();
-   for (var rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
-      dTable.setValue(
-         rowIndex, 0, gadash.util.stringDateToString(
+  var numberOfRows = dTable.getNumberOfRows();
+  for (var rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
+    dTable.setValue(
+        rowIndex, 0, gadash.util.stringDateToString(
             dTable.getValue(rowIndex, 0)
-         )
-      );
-   }
-   return dTable;
+        )
+    );
+  }
+  return dTable;
 };
 
 
@@ -793,7 +794,7 @@ gadash.util.htmlEscape = function(str) {
  * Asynchronously loads a single JavaScript resource. If defined,
  * opt_callback is executed once the resource is done loading.
  * @param {String} url The JavaScript resource to load.
- * @param {?String} opt_callback Optional JavaScript function to execute once
+ * @param {String=} opt_callback Optional JavaScript function to execute once
  *     the JavaScript resource has loaded.
  */
 gadash.util.loadJs_Resource = function(url, opt_callback) {
@@ -818,7 +819,7 @@ gadash.util.loadJs_Resource = function(url, opt_callback) {
  *     to load.
  * @param {Function} finalCallback The function to execute once all the
  *     JavaScript resources have loaded.
- * @param {Boolean} opt_useGlobal If all the callbacks should use a
+ * @param {Boolean=} opt_useGlobal If all the callbacks should use a
  *     single global function. This is useful if the JavaScript resources
  *     require defining the callback in the URL itself.
  * @private.
@@ -1039,6 +1040,7 @@ gadash.gviz.columnChart = {
 };
 
 
+
 /**
  * Line Chart Wrapper
  * gadash.GaLineChart is a subclass of gadash.Chart.
@@ -1053,7 +1055,7 @@ gadash.gviz.columnChart = {
  *     the chart should appear on a webpage.
  * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -1074,7 +1076,7 @@ gadash.GaLineChart = function(div, ids, metrics, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.lineChart)
   .set(opt_config);
-   return this;
+  return this;
 };
 
 
@@ -1082,6 +1084,7 @@ gadash.GaLineChart = function(div, ids, metrics, opt_config) {
  * Make GaLineChart a subclass of Chart class using chaining inheritance.
  */
 gadash.GaLineChart.prototype = new gadash.Chart();
+
 
 
 /**
@@ -1099,7 +1102,7 @@ gadash.GaLineChart.prototype = new gadash.Chart();
  *     the chart should appear on a webpage.
  * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -1130,6 +1133,7 @@ gadash.GaAreaChart = function(div, ids, metrics, opt_config) {
 gadash.GaAreaChart.prototype = new gadash.Chart();
 
 
+
 /**
  * Pie Chart Wrapper
  * gadash.GaPieChart is a subclass of gadash.Chart
@@ -1144,7 +1148,7 @@ gadash.GaAreaChart.prototype = new gadash.Chart();
  * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
  * @param {String} dimensions - contains the dimensions to be used in chart.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -1175,6 +1179,7 @@ gadash.GaPieChart = function(div, ids, metrics, dimensions, opt_config) {
 gadash.GaPieChart.prototype = new gadash.Chart();
 
 
+
 /**
  * Bar Chart Wrapper
  * gadash.GaBarChart is a subclass of gadash.Chart.
@@ -1189,7 +1194,7 @@ gadash.GaPieChart.prototype = new gadash.Chart();
  *     the chart should appear on a webpage.
  * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -1220,6 +1225,7 @@ gadash.GaBarChart = function(div, ids, metrics, opt_config) {
 gadash.GaBarChart.prototype = new gadash.Chart();
 
 
+
 /**
  * Bar Column Wrapper
  * gadash.GaColumnChart is a subclass of gadash.Chart.
@@ -1234,7 +1240,7 @@ gadash.GaBarChart.prototype = new gadash.Chart();
  *     the chart should appear on a webpage.
  * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
- * @param {?Object} opt_config - Contains all configuration variables
+ * @param {Object=} opt_config - Contains all configuration variables
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
@@ -1263,10 +1269,3 @@ gadash.GaColumnChart = function(div, ids, metrics, opt_config) {
  * Make GaColumnChart a subclass of Chart class using chaining inheritance.
  */
 gadash.GaColumnChart.prototype = new gadash.Chart();
-
-
-
-
-
-
-
