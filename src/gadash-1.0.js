@@ -286,7 +286,9 @@ gadash.Chart.prototype.render = function() {
 /**
  * Makes a request to the Google Analytics API.
  * Updates the start and end date if last-n-days
- * has been set. The function also creates and executes a Google Analytics
+ * has been set. If neither start not end date is set, a default of the last
+ * 28 days is sued.
+ * The function also creates and executes a Google Analytics
  * API request using the Chart objects callback method. The callback
  * is bound to the Chart instance so a reference back to this chart is
  * maintained within the callback.
@@ -298,6 +300,12 @@ gadash.Chart.prototype.renderFunction = function() {
     this.config.query['end-date'] = gadash.util.lastNdays(0);
     this.config.query['start-date'] =
         gadash.util.lastNdays(this.config['last-n-days']);
+  } else {
+    if (!this.config.query['start-date'] || !this.config.query['end-date']) {
+      // Provide a default date range of last 28 days.
+      this.config.query['end-date'] = gadash.util.lastNdays(0);
+      this.config.query['start-date'] = gadash.util.lastNdays(28);
+    }
   }
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
@@ -861,21 +869,6 @@ gadash.util.loadJs_([
 
 
 /**
- * Checks the date of a wrapper.
- * if opt_config has no end-date, no start-date, and no last-n-days
- * the default value for date is set to the last 30 days
- * @param {Object} chart - contains an instance of a chart object.
- */
-gadash.gviz.checkDate = function(chart) {
-   if (!chart.config.query['end-date'] &&
-       !chart.config.query['start-date'] &&
-       !chart.config['last-n-days']) {
-          chart.set({'last-n-days': 30});
-    }
-};
-
-
-/**
  * Object containing default value for the chartOptions object.
  * This object is used by all chart wrappers.
  */
@@ -1073,7 +1066,6 @@ gadash.GaLineChart = function(div, ids, metrics, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.lineChart)
   .set(opt_config);
-   gadash.gviz.checkDate(this);
    return this;
 };
 
@@ -1120,7 +1112,6 @@ gadash.GaAreaChart = function(div, ids, metrics, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.areaChart)
   .set(opt_config);
-  gadash.gviz.checkDate(this);
   return this;
 };
 
@@ -1166,7 +1157,6 @@ gadash.GaPieChart = function(div, ids, metrics, dimensions, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.pieChart)
   .set(opt_config);
-  gadash.gviz.checkDate(this);
   return this;
 };
 
@@ -1212,7 +1202,6 @@ gadash.GaBarChart = function(div, ids, metrics, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.barChart)
   .set(opt_config);
-  gadash.gviz.checkDate(this);
   return this;
 };
 
@@ -1258,7 +1247,6 @@ gadash.GaColumnChart = function(div, ids, metrics, opt_config) {
   .set(gadash.gviz.defaultChartOptions)
   .set(gadash.gviz.columnChart)
   .set(opt_config);
-  gadash.gviz.checkDate(this);
   return this;
 };
 
