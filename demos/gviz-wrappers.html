@@ -1,0 +1,89 @@
+<!DOCTYPE>
+<html>
+<head><title>Google Analytics EZ Dashboard Demo</title></head>
+<body>
+  <h1>Google Analytics Easy Dashboard Sample</h1>
+  <p>This is a simple demo for the
+     <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+       ga-dash library</a>.</p>
+
+  <p>This demo shows how to use the simplified google visualization wrapper
+     objects. Each object has it's own constructor.</p>
+
+  <!-- Display the user interface -->
+  <div id="gadash-auth">Loading ...</div>
+
+  <hr>
+  <p>Enter your Table ID: <input type="text" id="tableId">
+     <button onclick="renderGraph()">Draw Charts</button><br>
+     (Format ga:xxx where xxx is your profile ID)
+  </p>
+  <hr>
+  <div id="ui" style="display:none">
+    <h3>GA Line Chart</h3>
+    <div id='gaLineChartDiv'></div>
+
+    <h3>GA Area Chart</h3>
+    <div id='gaAreaChartDiv'></div>
+
+    <h3>GA Pie Chart</h3>
+    <div id='gaPieChartDiv'></div>
+
+    <h3>GA Bar Chart</h3>
+    <div id='gaBarChartDiv'></div>
+
+    <h3>GA Column Chart</h3>
+    <div id='gaColumnChartDiv'></div>
+  <div>
+
+  <!-- Load the gadash.js library -->
+  <script src="../src/gadash-1.0.js"></script>
+  <script>
+  gadash.configKeys({
+    'apiKey': 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+    'clientId':'821751250764.apps.googleusercontent.com'
+  });
+
+
+  // Create new Chart.
+  var gaLineChart = new gadash.GaLineChart(
+      'gaLineChartDiv', '', 'ga:visits,ga:pageviews');
+
+  var gaAreaChart = new gadash.GaAreaChart(
+      'gaAreaChartDiv', '', 'ga:visits,ga:pageviews');
+
+  var gaPieChart = new gadash.GaPieChart(
+      'gaPieChartDiv', '', 'ga:pageviews', 'ga:source');
+
+  var gaBarChart = new gadash.GaBarChart(
+      'gaBarChartDiv', '', 'ga:visits');
+
+  var gaColumnChart = new gadash.GaColumnChart(
+      'gaColumnChartDiv', '', 'ga:visits');
+
+  /**
+   * Handler for the run demo button.
+   * Uses the table ID in the form to update the baseConfig object. Then
+   * sets baseConfig into each of the charts. Then each chart's specific
+   * configuration parameters are set. Finally all are rendered.
+   */
+  function renderGraph() {
+     // Add the table id to the base configuration object.
+     var config = {
+       query: {
+         ids: document.getElementById('tableId').value
+       }
+     };
+     gaLineChart.set(config).render();
+     gaAreaChart.set(config).render();
+     gaPieChart.set(config).render();
+     gaBarChart.set(config).render();
+     gaColumnChart.set(config).render();
+
+
+     // Display UI.
+     document.getElementById('ui').style.display = 'block';
+   }
+  </script>
+</body>
+</html>

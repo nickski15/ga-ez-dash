@@ -21,16 +21,14 @@
  * Travis Lai, travisrlai@gmail.com
  * Daniel Nguyen, danielnuwin@gmail.com
  * Nick Mihailovski, api.nickm@gmail.com
+ * Laurent Jacquot, laurent1jacquot@gmail.com
+ * Osama Ahmad, ooahmad@gmail.com
  *
  * @fileoverview
  * This library is designed to create an easier way to build a custom
  * Google Analytics Dashboard by visualizing data from Google Analytics
  * API with the Google Chart Tools.
  */
-
-
-// Loads the core chart and table from the Google Visualization.
-//google.load('visualization', '1', {'packages': ['corechart', 'table']});
 
 
 /**
@@ -43,6 +41,13 @@ var gadash = gadash || {};
  * Namespace for util object. Contains lots of library utilities.
  */
 gadash.util = gadash.util || {};
+
+
+/**
+ * Namespace for gviz object. Contains objects on the way charts are
+ * displayed.
+ */
+gadash.gviz = gadash.gviz || {};
 
 
 /**
@@ -489,7 +494,103 @@ gadash.util.getChart = function(id, chartType) {
  *     into the chart.
  */
 gadash.util.draw = function(chart, dataTable, chartOptions) {
+
+  // TODO(nm): Re-evaluate why we do this here.
+  gadash.util.convertDateFormat(dataTable);
+  gadash.util.createDateFormater(dataTable);
   chart.draw(dataTable, chartOptions);
+};
+
+
+/**
+ * Converts string representing a date with the format YYYYMMDD
+ * @param {Object} dataTable - The Google DataTable object holding
+ *     the response data.
+ */
+gadash.util.convertDateFormat = function(dataTable) {
+  //Stores the first value of the first column of the response data
+  var isStrDate = new String(dataTable.getValue(0, 0));
+
+  //Checks if the string object is representing a date with the format YYYYMMDD
+  var datePattern = /^(20)\d{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$/;
+  if (isStrDate.search(datePattern) == 0) {
+      dataTable = gadash.util.convertToMMMd(dataTable);
+  }
+};
+
+
+/**
+ * Takes the first column of the dataTable and changes its values to
+ * a date string of the form 'MMM dd' (e.g., Oct 23).
+ * @param {Object} dTable - The Google DataTable object holding
+ *     the response data.
+ * @return {Object} dTable - A Google DataTable object populated
+ *     with the GA response data and modified string date format.
+ */
+gadash.util.convertToMMMd = function(dTable) {
+   var numberOfRows = dTable.getNumberOfRows();
+   for (var rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
+      dTable.setValue(
+         rowIndex, 0, gadash.util.stringDateToString(
+            dTable.getValue(rowIndex, 0)
+         )
+      );
+   }
+   return dTable;
+};
+
+
+/**
+ * Converts a String composed of 8 digits representing a date (e.g., 20121023)
+ * into a String composed of 3 letters representing the month followed by a
+ * space and 1 or 2 digits representing the day of the month (e.g., Oct 23).
+ * @param {String} date - 8 digits in the following format: YYYYMMDD.
+ * @return {String} date - in the format: MMM D.
+ */
+gadash.util.stringDateToString = function(date) {
+  //Checks if the string object is representing a date with the format YYYYMMDD
+  var datePattern = /^(20)\d{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])$/;
+  if (date.search(datePattern) == 0) {
+    var monthMap = {
+      '01': 'Jan',
+      '02': 'Feb',
+      '03': 'Mar',
+      '04': 'Apr',
+      '05': 'May',
+      '06': 'Jun',
+      '07': 'Jul',
+      '08': 'Aug',
+      '09': 'Sep',
+      '10': 'Oct',
+      '11': 'Nov',
+      '12': 'Dec'
+    };
+
+    //Convert 2 digits representing a month into a 3 letters string
+    var month = date.substring(4, 6);
+    var monthStr = monthMap[month];
+
+    //Convert 2 digits represneting a day into 1 or 2 digits string
+    var day = date.substring(6, 8);
+    if (day < 10) {
+      day = day.substring(1, 2);
+    }
+
+    //Concatenate the resulting month and day separated by a white space
+    date = monthStr + ' ' + day;
+  }
+  return date;
+};
+
+
+/**
+ * Creates a date format 'MMM d', which can be called by chart wrappers
+ * @param {Object} dataTable - The Google DataTable object holding
+ *     the response data.
+ */
+gadash.util.createDateFormater = function(dataTable) {
+  var dateFormatter = new google.visualization.DateFormat({pattern: 'MMM d'});
+  dateFormatter.format(dataTable, 0);
 };
 
 
@@ -754,5 +855,422 @@ gadash.util.loadJs_([
       '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
   'https://apis.google.com/js/client.js?onload=__globalCallback'
 ], window.gadashInit, true);
+
+
+// Gviz chart wrappers.
+
+
+/**
+ * Checks the date of a wrapper.
+ * if opt_config has no end-date, no start-date, and no last-n-days
+ * the default value for date is set to the last 30 days
+ * @param {Object} chart - contains an instance of a chart object.
+ */
+gadash.gviz.checkDate = function(chart) {
+   if (!chart.config.query['end-date'] &&
+       !chart.config.query['start-date'] &&
+       !chart.config['last-n-days']) {
+          chart.set({'last-n-days': 30});
+    }
+};
+
+
+/**
+ * Object containing default value for the chartOptions object.
+ * This object is used by all chart wrappers.
+ */
+gadash.gviz.defaultChartOptions = {
+  'chartOptions': {
+    height: 300,
+    width: 450,
+    fontSize: 12,
+    curveType: 'function',
+    titleTextStyle: {
+      fontName: 'Arial',
+      fontSize: 15,
+      bold: false
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Line chart wrapper.
+ */
+gadash.gviz.lineChart = {
+  'type': 'LineChart',
+  'chartOptions': {
+    pointSize: 6,
+    lineWidth: 4,
+    areaOpacity: 0.1,
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      format: 'MMM d',
+      gridlines: {color: 'transparent'},
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        logScale: 'true',
+        count: 3
+      },
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Area chart wrapper.
+ */
+gadash.gviz.areaChart = {
+  'type': 'AreaChart',
+  'chartOptions': {
+    pointSize: 6,
+    lineWidth: 4,
+    areaOpacity: 0.1,
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      format: 'MMM d',
+      gridlines: {
+        count: 3,
+        color: 'transparent'
+      },
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        logScale: 'true',
+        count: 3
+      },
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Pie chart wrapper.
+ */
+gadash.gviz.pieChart = {
+  'type': 'PieChart',
+  'chartOptions': {
+    legend: {
+      position: 'right',
+      textStyle: {
+        bold: 'true',
+        fontSize: 13
+      },
+      alignment: 'center',
+      pieSliceText: 'none'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the bar chart wrapper.
+ */
+gadash.gviz.barChart = {
+  'type': 'BarChart',
+  'chartOptions': {
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      gridlines: {
+        count: 3,
+        color: '#efefef'
+      },
+      minValue: 0,
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: 'transparent'
+      },
+      count: 3,
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Column chart wrapper.
+ */
+gadash.gviz.columnChart = {
+  'type': 'ColumnChart',
+  'chartOptions': {
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      gridlines: {
+        count: 3,
+        color: 'transparent'
+      },
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        count: 3
+      },
+      minValue: 0,
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Line Chart Wrapper
+ * gadash.GaLineChart is a subclass of gadash.Chart.
+ * GaLineChart declares a configuration object as its super class Chart and
+ * attributes default setting specific to line charts.
+ * A optional configuration object is passed as a paramter and can override
+ * or supplement properties of the configuration object.
+ * Following default values are used for this object:
+ *     for the dimensions: 'ga:date',
+ *     for the start time / date range: 'last-n-days': 30.
+ * @param {String} div - contains the <div> tag id value to indicate where
+ *     the chart should appear on a webpage.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
+ * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {?Object} opt_config - Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} this Returns a reference to the newly instantiated
+ *     instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaLineChart = function(div, ids, metrics, opt_config) {
+  this.config = {};
+  this.set({
+    'divContainer': div,
+    'query': {
+      'ids': ids,
+      'metrics': metrics,
+      'dimensions': 'ga:date'
+    }
+  })
+  .set(gadash.gviz.defaultChartOptions)
+  .set(gadash.gviz.lineChart)
+  .set(opt_config);
+   gadash.gviz.checkDate(this);
+   return this;
+};
+
+
+/**
+ * Make GaLineChart a subclass of Chart class using chaining inheritance.
+ */
+gadash.GaLineChart.prototype = new gadash.Chart();
+
+
+/**
+ * Area Chart Wrapper
+ * gadash.GaAreaChart is a subclass of gadash.Chart
+ * GaAreaChart declares a configuration object as its super class Chart and
+ * attributes default setting specific to line charts.
+ * A optional configuration object is passed as a paramter and can override
+ * or supplement properties of the configuration object.
+ * Following default values are used for this object:
+ *     for the dimensions: 'ga:date',
+ *     for the start time / date range: 'last-n-days': 30 if opt_config does
+ *         not specify the entries.
+ * @param {String} div - contains the <div> tag id value to indicate where
+ *     the chart should appear on a webpage.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
+ * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {?Object} opt_config - Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} this Returns a reference to the newly instantiated
+ *     instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaAreaChart = function(div, ids, metrics, opt_config) {
+  this.config = {};
+  this.set({
+    'divContainer': div,
+    'query': {
+      'ids': ids,
+      'metrics': metrics,
+      'dimensions': 'ga:date'
+    }
+  })
+  .set(gadash.gviz.defaultChartOptions)
+  .set(gadash.gviz.areaChart)
+  .set(opt_config);
+  gadash.gviz.checkDate(this);
+  return this;
+};
+
+
+/**
+ * Make GaAreaChart a subclass of Chart class using chaining inheritance.
+ */
+gadash.GaAreaChart.prototype = new gadash.Chart();
+
+
+/**
+ * Pie Chart Wrapper
+ * gadash.GaPieChart is a subclass of gadash.Chart
+ * GaPieChart declares a configuration object as its super class Chart and
+ * attributes default setting specific to pie charts.
+ * A optional configuration object is passed as a paramter and can override
+ * or supplement properties of the configuration object.
+ * Following default values are used for this object:
+ *     for the start time / date range: 'last-n-days': 30.
+ * @param {String} div - contains the <div> tag id value to indicate where
+ *     the chart should appear on a webpage.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
+ * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {String} dimensions - contains the dimensions to be used in chart.
+ * @param {?Object} opt_config - Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} this Returns a reference to the newly instantiated
+ *     instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaPieChart = function(div, ids, metrics, dimensions, opt_config) {
+  this.config = {};
+  this.set({
+    'divContainer': div,
+    'query': {
+      'ids': ids,
+      'metrics': metrics,
+      'dimensions': dimensions
+    }
+  })
+  .set(gadash.gviz.defaultChartOptions)
+  .set(gadash.gviz.pieChart)
+  .set(opt_config);
+  gadash.gviz.checkDate(this);
+  return this;
+};
+
+
+/**
+ * Make GaPieChart a subclass of Chart class using chaining inheritance.
+ */
+gadash.GaPieChart.prototype = new gadash.Chart();
+
+
+/**
+ * Bar Chart Wrapper
+ * gadash.GaBarChart is a subclass of gadash.Chart.
+ * GaBarChart declares a configuration object as its super class Chart and
+ * attributes default setting specific to line charts.
+ * A optional configuration object is passed as a paramter and can override
+ * or supplement properties of the configuration object.
+ * Following default values are used for this object:
+ *     for the dimensions: 'ga:date',
+ *     for the start time / date range: 'last-n-days': 30.
+ * @param {String} div - contains the <div> tag id value to indicate where
+ *     the chart should appear on a webpage.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
+ * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {?Object} opt_config - Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} this Returns a reference to the newly instantiated
+ *     instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaBarChart = function(div, ids, metrics, opt_config) {
+  this.config = {};
+  this.set({
+    'divContainer': div,
+    'query': {
+      'ids': ids,
+      'metrics': metrics,
+      'dimensions': 'ga:date'
+    }
+  })
+  .set(gadash.gviz.defaultChartOptions)
+  .set(gadash.gviz.barChart)
+  .set(opt_config);
+  gadash.gviz.checkDate(this);
+  return this;
+};
+
+
+/**
+ * Make GaBarChart a subclass of Chart class using chaining inheritance.
+ */
+gadash.GaBarChart.prototype = new gadash.Chart();
+
+
+/**
+ * Bar Column Wrapper
+ * gadash.GaColumnChart is a subclass of gadash.Chart.
+ * GaColumnChart declares a configuration object as its super class Chart and
+ * attributes default setting specific to line charts.
+ * A optional configuration object is passed as a paramter and can override
+ * or supplement properties of the configuration object.
+ * Following default values are used for this object:
+ *     for the dimensions: 'ga:date',
+ *     for the start time / date range: 'last-n-days': 30.
+ * @param {String} div - contains the <div> tag id value to indicate where
+ *     the chart should appear on a webpage.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
+ * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {?Object} opt_config - Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} this Returns a reference to the newly instantiated
+ *     instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaColumnChart = function(div, ids, metrics, opt_config) {
+  this.config = {};
+  this.set({
+    'divContainer': div,
+    'query': {
+      'ids': ids,
+      'metrics': metrics,
+      'dimensions': 'ga:date'
+    }
+  })
+  .set(gadash.gviz.defaultChartOptions)
+  .set(gadash.gviz.columnChart)
+  .set(opt_config);
+  gadash.gviz.checkDate(this);
+  return this;
+};
+
+
+/**
+ * Make GaColumnChart a subclass of Chart class using chaining inheritance.
+ */
+gadash.GaColumnChart.prototype = new gadash.Chart();
+
+
+
+
+
 
 
