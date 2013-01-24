@@ -13,20 +13,20 @@
  * limitations under the License.
  */
 
+
 /**
  * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
  * @author aryabond@gmail.com (Arya Bondarian)
  * @author agau@uci.edu (Albert Gau)
  * @author travisrlai@gmail.com (Travis Lai)
  * @author danielnuwin@gmail.com (Daniel Nguyen)
- * @author api.nickm@gmail.com (Nick Mihailovski)
+ * @author nickski15@gmail.com (Nick Mihailovski)
  * @author laurent1jacquot@gmail.com (Laurent Jacquot)
  * @author ooahmad@gmail.com (Osama Ahmad)
  *
  * @fileoverview
- * This library is designed to create an easier way to build a custom
- * Google Analytics Dashboard by visualizing data from Google Analytics
- * API with the Google Chart Tools.
+ * Provides the Chart object that simplifies querying the
+ * Google Analytics Core Reporting API.
  */
 
 
@@ -34,19 +34,6 @@
  * Namespace for this library if not already created.
  */
 var gadash = gadash || {};
-
-
-/**
- * Namespace for util object. Contains lots of library utilities.
- */
-gadash.util = gadash.util || {};
-
-
-/**
- * Namespace for gviz object. Contains objects on the way charts are
- * displayed.
- */
-gadash.gviz = gadash.gviz || {};
 
 
 /**
@@ -76,14 +63,6 @@ gadash.SCOPES = [
  * @type {Array}
  */
 gadash.commandQueue = [];
-
-
-/**
- * Variable to store a global callback. Used when loading Javascript
- * resources that support defining their own callback in the URL.
- * Should be used in conjunction with gadash.util.loadJs_ function..
- */
-window.__globalCallback = {};
 
 
 /**
@@ -220,18 +199,18 @@ gadash.executeCommandQueue = function() {
 
 
 /**
- * A Chart object is the primary object in this library.
- * A Chart accepts an optional configuration object that contains all the
- * parameters of the chart. Also changes start and end date of
- * the query, if last-n-days is set in the config.
- * @param {Object=} opt_config Contains all configuration variables
- *     of a Chart object. This parameter is passed by value, and a deep
- *     copy is made. Once set, the original object can be modified and
- *     it will not affect this object.
- * @return {Object} this Returns a reference to the newly instantiated
- *     Chart instance. Useful for chaining methods together.
- * @constructor
- */
+* A Chart object is the primary object in this library.
+* A Chart accepts an optional configuration object that contains all the
+* parameters of the chart. Also changes start and end date of
+* the query, if last-n-days is set in the config.
+* @param {Object=} opt_config Contains all configuration variables
+*     of a Chart object. This parameter is passed by value, and a deep
+*     copy is made. Once set, the original object can be modified and
+*     it will not affect this object.
+* @return {Object} this Returns a reference to the newly instantiated
+*     Chart instance. Useful for chaining methods together.
+* @constructor
+*/
 gadash.Chart = function(opt_config) {
   /**
    * The main configuration object.
@@ -389,134 +368,35 @@ gadash.Chart.prototype.defaultOnSuccess = function(resp) {
   var chart = gadash.util.getChart(this.config.divContainer, this.config.type);
   gadash.util.draw(chart, dataTable, this.config.chartOptions);
 };
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ * @author laurent1jacquot@gmail.com (Laurent Jacquot)
+ * @author ooahmad@gmail.com (Osama Ahmad)
+ *
+ * @fileoverview
+ * This file provices utility methods used by the rest of the gadash library.
+ */
 
 
 /**
- * Creates a DataTable object using a GA response.
- * @param {Object} resp A Google Analytics response.
- * @param {String=} opt_chartType The chart type. Provides a hint on
- *     how to parse the API results into a data table.
- * @return {Object} data A Google DataTable object populated
- *     with the GA response data.
- * @this references the Chart object.
+ * Namespace for util object. Contains lots of library utilities.
  */
-gadash.util.getDataTable = function(resp, opt_chartType) {
-
-  var chartType = opt_chartType || false;
-
-  var data = new google.visualization.DataTable();
-  var numOfColumns = resp.columnHeaders.length;
-  var numOfRows;
-
-  // Throw an error if there are no rows returned.
-  if (resp.rows && resp.rows.length) {
-    numOfRows = resp.rows.length;
-  } else {
-    this.defaultOnError('No rows returned for that query.');
-  }
-
-  /*
-   * Looks at the resp column headers to set names and types for each column.
-   * Since bar and column chart don't support date object, set type as string
-   * rather than a Date.
-   */
-  for (var i = 0; i < numOfColumns; i++) {
-    var dataType = resp.columnHeaders[i].dataType;
-    var name = resp.columnHeaders[i].name;
-
-    if (name == 'ga:date' &&
-        !(chartType == 'ColumnChart' || chartType == 'BarChart')) {
-
-      dataType = 'date';
-    } else if (dataType == 'STRING') {
-      dataType = 'string';
-    } else {
-      dataType = 'number';
-    }
-    data.addColumn(dataType, gadash.util.formatGAString(name));
-  }
-
-  /*
-   * Populates the rows by using the resp.rows array. If the type
-   * is an int then parse the INT. If it is a percent, then round
-   * to last two decimal places and store as INT.
-   */
-  for (var i = 0; i < numOfRows; i++) {
-    var arrayMetrics = [];
-    for (var j = 0; j < numOfColumns; j++) {
-      var name = resp.columnHeaders[j].name;
-      var dataType = resp.columnHeaders[j].dataType;
-
-      if (name == 'ga:date' &&
-          !(chartType == 'ColumnChart' || chartType == 'BarChart')) {
-
-        arrayMetrics.push(gadash.util.stringToDate(resp.rows[i][j]));
-      } else if (dataType == 'INTEGER') {
-        arrayMetrics.push(parseInt(resp.rows[i][j]));
-      } else if (dataType == 'CURRENCY') {
-        arrayMetrics.push(parseFloat(resp.rows[i][j]));
-      } else if (dataType == 'PERCENT' || dataType == 'TIME' ||
-          dataType == 'FLOAT') {
-        arrayMetrics.push(Math.round((resp.rows[i][j]) * 100) / 100);
-      } else {
-        arrayMetrics.push(resp.rows[i][j]);
-      }
-    }
-    data.addRow(arrayMetrics);
-  }
-
-  /*
-   * Iterates through each column in the data table and formats
-   * any column that has a CURRENCY datatype to two decimal places
-   * and a '$' before the amount.
-   */
-  for (var i = 0; i < numOfColumns; i++) {
-    var dataType = resp.columnHeaders[i].dataType;
-    if (dataType == 'CURRENCY') {
-      var formatter = new google.visualization.NumberFormat(
-          {fractionDigits: 2});
-      formatter.format(data, i);
-    }
-  }
-
-  return data;
-};
-
-
-/**
- * Checks to see if the type of chart in the config is valid.
- * If it is, get its chart instance, else return a Table instance.
- * @param {String} id The ID of the HTML element in which to render
- *     the chart.
- * @param {String} chartType The type of the Chart to render.
- * @return {Object} visualization - returns the Chart instance.
- */
-gadash.util.getChart = function(id, chartType) {
-  var elem = document.getElementById(id);
-
-  if (google.visualization[chartType]) {
-    return new google.visualization[chartType](elem);
-  }
-
-  return new google.visualization.Table(elem);
-};
-
-
-/**
- * Draws a chart to its declared div using a DataTable.
- * @param {Object} chart - The Chart instance you wish to draw the data into.
- * @param {Object} dataTable - The Google DataTable object holding
- *     the response data.
- * @param {Object} chartOptions - The optional configuration parameters to pass
- *     into the chart.
- */
-gadash.util.draw = function(chart, dataTable, chartOptions) {
-
-  // TODO(nm): Re-evaluate why we do this here.
-  gadash.util.convertDateFormat(dataTable);
-  gadash.util.createDateFormater(dataTable);
-  chart.draw(dataTable, chartOptions);
-};
+gadash.util = gadash.util || {};
 
 
 /**
@@ -597,17 +477,6 @@ gadash.util.stringDateToString = function(date) {
     date = monthStr + ' ' + day;
   }
   return date;
-};
-
-
-/**
- * Creates a date format 'MMM d', which can be called by chart wrappers
- * @param {Object} dataTable - The Google DataTable object holding
- *     the response data.
- */
-gadash.util.createDateFormater = function(dataTable) {
-  var dateFormatter = new google.visualization.DateFormat({pattern: 'MMM d'});
-  dateFormatter.format(dataTable, 0);
 };
 
 
@@ -810,6 +679,14 @@ gadash.util.loadJs_Resource = function(url, opt_callback) {
 
 
 /**
+ * Variable to store a global callback. Used when loading Javascript
+ * resources that support defining their own callback in the URL.
+ * Should be used in conjunction with gadash.util.loadJs_ function..
+ */
+window.__globalCallback = {};
+
+
+/**
  * Loads multiple JavaScript resources and executes finalCallback
  * once all are done loading. Some resources require a callback
  * function to be defined in the URL. These resources can be loaded
@@ -872,9 +749,184 @@ gadash.util.loadJs_([
       '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
   'https://apis.google.com/js/client.js?onload=__globalCallback'
 ], window.gadashInit, true);
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 
-// Gviz chart wrappers.
+/**
+ * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
+ * @author aryabond@gmail.com (Arya Bondarian)
+ * @author agau@uci.edu (Albert Gau)
+ * @author travisrlai@gmail.com (Travis Lai)
+ * @author danielnuwin@gmail.com (Daniel Nguyen)
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ * @author laurent1jacquot@gmail.com (Laurent Jacquot)
+ * @author ooahmad@gmail.com (Osama Ahmad)
+ *
+ * @fileoverview
+ * This file provides logic to transform the data returned from the
+ * Core Reporting API into Google Visualization Charts.
+ */
+
+
+/**
+ * Namespace for gviz object. Contains objects on the way charts are
+ * displayed.
+ */
+gadash.gviz = gadash.gviz || {};
+
+
+/**
+ * Creates a DataTable object using a GA response.
+ * @param {Object} resp A Google Analytics response.
+ * @param {String=} opt_chartType The chart type. Provides a hint on
+ *     how to parse the API results into a data table.
+ * @return {Object} data A Google DataTable object populated
+ *     with the GA response data.
+ * @this references the Chart object.
+ */
+gadash.util.getDataTable = function(resp, opt_chartType) {
+
+  var chartType = opt_chartType || false;
+
+  var data = new google.visualization.DataTable();
+  var numOfColumns = resp.columnHeaders.length;
+  var numOfRows;
+
+  // Throw an error if there are no rows returned.
+  if (resp.rows && resp.rows.length) {
+    numOfRows = resp.rows.length;
+  } else {
+    this.defaultOnError('No rows returned for that query.');
+  }
+
+  /*
+   * Looks at the resp column headers to set names and types for each column.
+   * Since bar and column chart don't support date object, set type as string
+   * rather than a Date.
+   */
+  for (var i = 0; i < numOfColumns; i++) {
+    var dataType = resp.columnHeaders[i].dataType;
+    var name = resp.columnHeaders[i].name;
+
+    if (name == 'ga:date' &&
+        !(chartType == 'ColumnChart' || chartType == 'BarChart')) {
+
+      dataType = 'date';
+    } else if (dataType == 'STRING') {
+      dataType = 'string';
+    } else {
+      dataType = 'number';
+    }
+    data.addColumn(dataType, gadash.util.formatGAString(name));
+  }
+
+  /*
+   * Populates the rows by using the resp.rows array. If the type
+   * is an int then parse the INT. If it is a percent, then round
+   * to last two decimal places and store as INT.
+   */
+  for (var i = 0; i < numOfRows; i++) {
+    var arrayMetrics = [];
+    for (var j = 0; j < numOfColumns; j++) {
+      var name = resp.columnHeaders[j].name;
+      var dataType = resp.columnHeaders[j].dataType;
+
+      if (name == 'ga:date' &&
+          !(chartType == 'ColumnChart' || chartType == 'BarChart')) {
+
+        arrayMetrics.push(gadash.util.stringToDate(resp.rows[i][j]));
+      } else if (dataType == 'INTEGER') {
+        arrayMetrics.push(parseInt(resp.rows[i][j]));
+      } else if (dataType == 'CURRENCY') {
+        arrayMetrics.push(parseFloat(resp.rows[i][j]));
+      } else if (dataType == 'PERCENT' || dataType == 'TIME' ||
+          dataType == 'FLOAT') {
+        arrayMetrics.push(Math.round((resp.rows[i][j]) * 100) / 100);
+      } else {
+        arrayMetrics.push(resp.rows[i][j]);
+      }
+    }
+    data.addRow(arrayMetrics);
+  }
+
+  /*
+   * Iterates through each column in the data table and formats
+   * any column that has a CURRENCY datatype to two decimal places
+   * and a '$' before the amount.
+   */
+  for (var i = 0; i < numOfColumns; i++) {
+    var dataType = resp.columnHeaders[i].dataType;
+    if (dataType == 'CURRENCY') {
+      var formatter = new google.visualization.NumberFormat(
+          {fractionDigits: 2});
+      formatter.format(data, i);
+    }
+  }
+
+  return data;
+};
+
+
+/**
+ * Checks to see if the type of chart in the config is valid.
+ * If it is, get its chart instance, else return a Table instance.
+ * @param {String} id The ID of the HTML element in which to render
+ *     the chart.
+ * @param {String} chartType The type of the Chart to render.
+ * @return {Object} visualization - returns the Chart instance.
+ */
+gadash.util.getChart = function(id, chartType) {
+  var elem = document.getElementById(id);
+
+  if (google.visualization[chartType]) {
+    return new google.visualization[chartType](elem);
+  }
+
+  return new google.visualization.Table(elem);
+};
+
+
+/**
+ * Draws a chart to its declared div using a DataTable.
+ * @param {Object} chart - The Chart instance you wish to draw the data into.
+ * @param {Object} dataTable - The Google DataTable object holding
+ *     the response data.
+ * @param {Object} chartOptions - The optional configuration parameters to pass
+ *     into the chart.
+ */
+gadash.util.draw = function(chart, dataTable, chartOptions) {
+
+  // TODO(nm): Re-evaluate why we do this here.
+  gadash.util.convertDateFormat(dataTable);
+  gadash.gviz.createDateFormater(dataTable);
+  chart.draw(dataTable, chartOptions);
+};
+
+
+
+
+/**
+ * Creates a date format 'MMM d', which can be called by chart wrappers
+ * @param {Object} dataTable - The Google DataTable object holding
+ *     the response data.
+ */
+gadash.gviz.createDateFormater = function(dataTable) {
+  var dateFormatter = new google.visualization.DateFormat({pattern: 'MMM d'});
+  dateFormatter.format(dataTable, 0);
+};
 
 
 /**
