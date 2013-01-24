@@ -219,7 +219,7 @@ gadash.Chart = function(opt_config) {
   this.config = {};
 
   if (opt_config) {
-    gadash.util.extend(opt_config, this.config);
+    this.set(opt_config);
   }
 
   return this;
