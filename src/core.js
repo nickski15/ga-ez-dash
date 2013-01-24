@@ -138,7 +138,7 @@ gadash.loadUserName = function() {
 /**
  * Updates the UI once the user has authorized this script to access their
  * data by hiding the authorize button. Also, runs executeCommandQueue
- * function to render all charts in the commandQueue. The execution of the
+ * function to render all CoreQuerys in the commandQueue. The execution of the
  * command queue only happens once.
  */
 gadash.handleAuthorized = function() {
@@ -199,10 +199,23 @@ gadash.executeCommandQueue = function() {
 
 
 /**
-* A Chart object is the primary object in this library.
-* A Chart accepts an optional configuration object that contains all the
-* parameters of the chart. Also changes start and end date of
+* A Core Query object is the base object to perform a Core Reporting API query.
+* It accepts an optional configuration object that contains an
+* object defining the query. Also changes start and end date of
 * the query, if last-n-days is set in the config.
+* Usage:
+* var cq = new gadash.CoreQuery({
+*   query: {
+*     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
+*     'start-date': '2012-01-01',
+*     'end-date': '2012-02-01',
+*     'metrics': 'ga:visits'
+*   },
+*   onSuccess: function(response) {
+*     // Handle API response.
+*   }
+* });
+*
 * @param {Object=} opt_config Contains all configuration variables
 *     of a Chart object. This parameter is passed by value, and a deep
 *     copy is made. Once set, the original object can be modified and
@@ -211,30 +224,22 @@ gadash.executeCommandQueue = function() {
 *     Chart instance. Useful for chaining methods together.
 * @constructor
 */
-gadash.Chart = function(opt_config) {
-  /**
-   * The main configuration object.
-   * @type {Object}
-   */
+gadash.CoreQuery = function(opt_config) {
   this.config = {};
-
-  if (opt_config) {
-    this.set(opt_config);
-  }
-
+  this.set(opt_config);
   return this;
 };
 
 
 /**
- * Extends the values in the chart's config object with the keys in
- * the config parameters. If a key in config already exists in the chart,
+ * Extends the values in the CoreQuery's config object with the keys in
+ * the config parameters. If a key in config already exists in the CoreQuery,
  * and the value is not an object, the new value overwrites the old.
  * @param {Object} config The config object to set inside this object.
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Chart.prototype.set = function(config) {
+gadash.CoreQuery.prototype.set = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -242,14 +247,14 @@ gadash.Chart.prototype.set = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * chart can be rendered right away. Otherwise, other operations are queued,
+ * CoreQuery can be rendered right away. Otherwise, other operations are queued,
  * so the render command is pushed to the command queue to be executed in
  * the same order as originally called.
- * @this Points to the current chart instance.
- * @return {Object} The current instance of this chart object. Useful for
+ * @this Points to the current CoreQuery instance.
+ * @return {Object} The current instance of this CoreQuery object. Useful for
  *     chaining methods.
  */
-gadash.Chart.prototype.render = function() {
+gadash.CoreQuery.prototype.render = function() {
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
@@ -268,10 +273,10 @@ gadash.Chart.prototype.render = function() {
  * Updates the default dates.
  * Next, the function also creates and executes a Google Analytics
  * API request using the Chart objects callback method. The callback
- * is bound to the Chart instance so a reference back to this chart is
+ * is bound to the Chart instance so a reference back to this query is
  * maintained within the callback.
  */
-gadash.Chart.prototype.renderFunction = function() {
+gadash.CoreQuery.prototype.renderFunction = function() {
   this.setDefaultDates(this.config);
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
@@ -285,7 +290,7 @@ gadash.Chart.prototype.renderFunction = function() {
  * 28 days is used.
  * @param {Object} config A config object.
  */
-gadash.Chart.prototype.setDefaultDates = function(config) {
+gadash.CoreQuery.prototype.setDefaultDates = function(config) {
   if (config['last-n-days']) {
     config.query['end-date'] = gadash.util.lastNdays(0);
     config.query['start-date'] =
@@ -305,12 +310,12 @@ gadash.Chart.prototype.setDefaultDates = function(config) {
  * First, the function checks to see if there are any errors on the
  * response. Then check to see if a onSuccess function was declared
  * in the config. If present, call onSuccess by first binding it to
- * this (ie this chart object instance). If not defined, just use
+ * this (ie this CoreQuery object instance). If not defined, just use
  * the default callback. The entire JSON response from the API
  * is passed to either defined or default callback.
  * @param {Object} response - Google Analytics API JSON response.
  */
-gadash.Chart.prototype.callback = function(response) {
+gadash.CoreQuery.prototype.callback = function(response) {
   if (response.error) {
     this.defaultOnError(response.error.code + ' ' + response.error.message);
   } else {
@@ -331,7 +336,7 @@ gadash.Chart.prototype.callback = function(response) {
  * to the error div.
  * @param {String} message - error message to print.
  */
-gadash.Chart.prototype.defaultOnError = function(message) {
+gadash.CoreQuery.prototype.defaultOnError = function(message) {
 
   // If onError param exists, use that as error handling function.
   if (this.config.onError) {
@@ -349,22 +354,18 @@ gadash.Chart.prototype.defaultOnError = function(message) {
       document.body.appendChild(errorDiv);
     }
 
-    // Prints chart divContainer and message to error div.
-    errorDiv.innerHTML += this.config.divContainer + ' error: ' +
-        message + '<br />';
+    // TODO(nm): Need better error handling.
+    // Prints CoreQuery divContainer and message to error div.
+    errorDiv.innerHTML += ' error: ' + message + '<br />';
+    //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
+    //    message + '<br />';
   }
 };
 
 
 /**
- * Default callback for creating Google Charts with a response. First, the
- * response is put into a DataTable object Second, the corresponding chart
- * is returned. The two are then combined to draw a chart that is populated
- * with the GA data.
- * @param {Object} resp A Google Analytics API JSON response.
+ * Default callback for creating Google Charts with a response.
+ * This is a no-op and should be overridden by a developer.
+ * @param {Object} response A Google Analytics API JSON response.
  */
-gadash.Chart.prototype.defaultOnSuccess = function(resp) {
-  var dataTable = gadash.util.getDataTable(resp, this.config.type);
-  var chart = gadash.util.getChart(this.config.divContainer, this.config.type);
-  gadash.util.draw(chart, dataTable, this.config.chartOptions);
-};
+gadash.CoreQuery.prototype.defaultOnSuccess = function(response) {};

@@ -138,7 +138,7 @@ gadash.loadUserName = function() {
 /**
  * Updates the UI once the user has authorized this script to access their
  * data by hiding the authorize button. Also, runs executeCommandQueue
- * function to render all charts in the commandQueue. The execution of the
+ * function to render all CoreQuerys in the commandQueue. The execution of the
  * command queue only happens once.
  */
 gadash.handleAuthorized = function() {
@@ -199,10 +199,23 @@ gadash.executeCommandQueue = function() {
 
 
 /**
-* A Chart object is the primary object in this library.
-* A Chart accepts an optional configuration object that contains all the
-* parameters of the chart. Also changes start and end date of
+* A Core Query object is the base object to perform a Core Reporting API query.
+* It accepts an optional configuration object that contains an
+* object defining the query. Also changes start and end date of
 * the query, if last-n-days is set in the config.
+* Usage:
+* var cq = new gadash.CoreQuery({
+*   query: {
+*     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
+*     'start-date': '2012-01-01',
+*     'end-date': '2012-02-01',
+*     'metrics': 'ga:visits'
+*   },
+*   onSuccess: function(response) {
+*     // Handle API response.
+*   }
+* });
+*
 * @param {Object=} opt_config Contains all configuration variables
 *     of a Chart object. This parameter is passed by value, and a deep
 *     copy is made. Once set, the original object can be modified and
@@ -211,30 +224,22 @@ gadash.executeCommandQueue = function() {
 *     Chart instance. Useful for chaining methods together.
 * @constructor
 */
-gadash.Chart = function(opt_config) {
-  /**
-   * The main configuration object.
-   * @type {Object}
-   */
+gadash.CoreQuery = function(opt_config) {
   this.config = {};
-
-  if (opt_config) {
-    this.set(opt_config);
-  }
-
+  this.set(opt_config);
   return this;
 };
 
 
 /**
- * Extends the values in the chart's config object with the keys in
- * the config parameters. If a key in config already exists in the chart,
+ * Extends the values in the CoreQuery's config object with the keys in
+ * the config parameters. If a key in config already exists in the CoreQuery,
  * and the value is not an object, the new value overwrites the old.
  * @param {Object} config The config object to set inside this object.
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Chart.prototype.set = function(config) {
+gadash.CoreQuery.prototype.set = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -242,14 +247,14 @@ gadash.Chart.prototype.set = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * chart can be rendered right away. Otherwise, other operations are queued,
+ * CoreQuery can be rendered right away. Otherwise, other operations are queued,
  * so the render command is pushed to the command queue to be executed in
  * the same order as originally called.
- * @this Points to the current chart instance.
- * @return {Object} The current instance of this chart object. Useful for
+ * @this Points to the current CoreQuery instance.
+ * @return {Object} The current instance of this CoreQuery object. Useful for
  *     chaining methods.
  */
-gadash.Chart.prototype.render = function() {
+gadash.CoreQuery.prototype.render = function() {
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
@@ -268,10 +273,10 @@ gadash.Chart.prototype.render = function() {
  * Updates the default dates.
  * Next, the function also creates and executes a Google Analytics
  * API request using the Chart objects callback method. The callback
- * is bound to the Chart instance so a reference back to this chart is
+ * is bound to the Chart instance so a reference back to this query is
  * maintained within the callback.
  */
-gadash.Chart.prototype.renderFunction = function() {
+gadash.CoreQuery.prototype.renderFunction = function() {
   this.setDefaultDates(this.config);
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
@@ -285,7 +290,7 @@ gadash.Chart.prototype.renderFunction = function() {
  * 28 days is used.
  * @param {Object} config A config object.
  */
-gadash.Chart.prototype.setDefaultDates = function(config) {
+gadash.CoreQuery.prototype.setDefaultDates = function(config) {
   if (config['last-n-days']) {
     config.query['end-date'] = gadash.util.lastNdays(0);
     config.query['start-date'] =
@@ -305,12 +310,12 @@ gadash.Chart.prototype.setDefaultDates = function(config) {
  * First, the function checks to see if there are any errors on the
  * response. Then check to see if a onSuccess function was declared
  * in the config. If present, call onSuccess by first binding it to
- * this (ie this chart object instance). If not defined, just use
+ * this (ie this CoreQuery object instance). If not defined, just use
  * the default callback. The entire JSON response from the API
  * is passed to either defined or default callback.
  * @param {Object} response - Google Analytics API JSON response.
  */
-gadash.Chart.prototype.callback = function(response) {
+gadash.CoreQuery.prototype.callback = function(response) {
   if (response.error) {
     this.defaultOnError(response.error.code + ' ' + response.error.message);
   } else {
@@ -331,7 +336,7 @@ gadash.Chart.prototype.callback = function(response) {
  * to the error div.
  * @param {String} message - error message to print.
  */
-gadash.Chart.prototype.defaultOnError = function(message) {
+gadash.CoreQuery.prototype.defaultOnError = function(message) {
 
   // If onError param exists, use that as error handling function.
   if (this.config.onError) {
@@ -349,25 +354,21 @@ gadash.Chart.prototype.defaultOnError = function(message) {
       document.body.appendChild(errorDiv);
     }
 
-    // Prints chart divContainer and message to error div.
-    errorDiv.innerHTML += this.config.divContainer + ' error: ' +
-        message + '<br />';
+    // TODO(nm): Need better error handling.
+    // Prints CoreQuery divContainer and message to error div.
+    errorDiv.innerHTML += ' error: ' + message + '<br />';
+    //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
+    //    message + '<br />';
   }
 };
 
 
 /**
- * Default callback for creating Google Charts with a response. First, the
- * response is put into a DataTable object Second, the corresponding chart
- * is returned. The two are then combined to draw a chart that is populated
- * with the GA data.
- * @param {Object} resp A Google Analytics API JSON response.
+ * Default callback for creating Google Charts with a response.
+ * This is a no-op and should be overridden by a developer.
+ * @param {Object} response A Google Analytics API JSON response.
  */
-gadash.Chart.prototype.defaultOnSuccess = function(resp) {
-  var dataTable = gadash.util.getDataTable(resp, this.config.type);
-  var chart = gadash.util.getChart(this.config.divContainer, this.config.type);
-  gadash.util.draw(chart, dataTable, this.config.chartOptions);
-};
+gadash.CoreQuery.prototype.defaultOnSuccess = function(response) {};
 // Copyright 2012 Google Inc. All Rights Reserved.
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
@@ -788,6 +789,41 @@ gadash.util.loadJs_([
 gadash.gviz = gadash.gviz || {};
 
 
+
+/**
+ * Base Chart for the Core Reporting API.
+ * @param {opt_config=} opt_config An optional configuration object.
+ *     See docs for usage.
+ * @return {Object} The newly created chart object useful for chaining.
+ * @constructor.
+ */
+gadash.Chart = function(opt_config) {
+  this.config = {};
+  this.set(opt_config);
+  return this;
+};
+
+
+/**
+ * Subclass CoreQuery by chaining the Chart prototype to the Core Query.
+ */
+gadash.Chart.prototype = new gadash.CoreQuery();
+
+
+/**
+ * Default callback for creating Google Charts with a response. First, the
+ * response is put into a DataTable object Second, the corresponding chart
+ * is returned. The two are then combined to draw a query that is populated
+ * with the GA data.
+ * @param {Object} response A Google Analytics API JSON response.
+ */
+gadash.Chart.prototype.defaultOnSuccess = function(response) {
+  var dataTable = gadash.gviz.getDataTable(response, this.config.type);
+  var chart = gadash.gviz.getChart(this.config.divContainer, this.config.type);
+  gadash.gviz.draw(chart, dataTable, this.config.chartOptions);
+};
+
+
 /**
  * Creates a DataTable object using a GA response.
  * @param {Object} resp A Google Analytics response.
@@ -797,7 +833,7 @@ gadash.gviz = gadash.gviz || {};
  *     with the GA response data.
  * @this references the Chart object.
  */
-gadash.util.getDataTable = function(resp, opt_chartType) {
+gadash.gviz.getDataTable = function(resp, opt_chartType) {
 
   var chartType = opt_chartType || false;
 
@@ -888,7 +924,7 @@ gadash.util.getDataTable = function(resp, opt_chartType) {
  * @param {String} chartType The type of the Chart to render.
  * @return {Object} visualization - returns the Chart instance.
  */
-gadash.util.getChart = function(id, chartType) {
+gadash.gviz.getChart = function(id, chartType) {
   var elem = document.getElementById(id);
 
   if (google.visualization[chartType]) {
@@ -907,15 +943,13 @@ gadash.util.getChart = function(id, chartType) {
  * @param {Object} chartOptions - The optional configuration parameters to pass
  *     into the chart.
  */
-gadash.util.draw = function(chart, dataTable, chartOptions) {
+gadash.gviz.draw = function(chart, dataTable, chartOptions) {
 
   // TODO(nm): Re-evaluate why we do this here.
   gadash.util.convertDateFormat(dataTable);
   gadash.gviz.createDateFormater(dataTable);
   chart.draw(dataTable, chartOptions);
 };
-
-
 
 
 /**
@@ -926,169 +960,6 @@ gadash.util.draw = function(chart, dataTable, chartOptions) {
 gadash.gviz.createDateFormater = function(dataTable) {
   var dateFormatter = new google.visualization.DateFormat({pattern: 'MMM d'});
   dateFormatter.format(dataTable, 0);
-};
-
-
-/**
- * Object containing default value for the chartOptions object.
- * This object is used by all chart wrappers.
- */
-gadash.gviz.defaultChartOptions = {
-  'chartOptions': {
-    height: 300,
-    width: 450,
-    fontSize: 12,
-    curveType: 'function',
-    titleTextStyle: {
-      fontName: 'Arial',
-      fontSize: 15,
-      bold: false
-    }
-  }
-};
-
-
-/**
- * Object containing default value for the Line chart wrapper.
- */
-gadash.gviz.lineChart = {
-  'type': 'LineChart',
-  'chartOptions': {
-    pointSize: 6,
-    lineWidth: 4,
-    areaOpacity: 0.1,
-    legend: {
-      position: 'top',
-      alignment: 'start'
-    },
-    colors: ['#058dc7'],
-    hAxis: {
-      format: 'MMM d',
-      gridlines: {color: 'transparent'},
-      baselineColor: 'transparent'
-    },
-    vAxis: {
-      gridlines: {
-        color: '#efefef',
-        logScale: 'true',
-        count: 3
-      },
-      textPosition: 'in'
-    }
-  }
-};
-
-
-/**
- * Object containing default value for the Area chart wrapper.
- */
-gadash.gviz.areaChart = {
-  'type': 'AreaChart',
-  'chartOptions': {
-    pointSize: 6,
-    lineWidth: 4,
-    areaOpacity: 0.1,
-    legend: {
-      position: 'top',
-      alignment: 'start'
-    },
-    colors: ['#058dc7'],
-    hAxis: {
-      format: 'MMM d',
-      gridlines: {
-        count: 3,
-        color: 'transparent'
-      },
-      baselineColor: 'transparent'
-    },
-    vAxis: {
-      gridlines: {
-        color: '#efefef',
-        logScale: 'true',
-        count: 3
-      },
-      textPosition: 'in'
-    }
-  }
-};
-
-
-/**
- * Object containing default value for the Pie chart wrapper.
- */
-gadash.gviz.pieChart = {
-  'type': 'PieChart',
-  'chartOptions': {
-    legend: {
-      position: 'right',
-      textStyle: {
-        bold: 'true',
-        fontSize: 13
-      },
-      alignment: 'center',
-      pieSliceText: 'none'
-    }
-  }
-};
-
-
-/**
- * Object containing default value for the bar chart wrapper.
- */
-gadash.gviz.barChart = {
-  'type': 'BarChart',
-  'chartOptions': {
-    legend: {
-      position: 'top',
-      alignment: 'start'
-    },
-    colors: ['#058dc7'],
-    hAxis: {
-      gridlines: {
-        count: 3,
-        color: '#efefef'
-      },
-      minValue: 0,
-      baselineColor: 'transparent'
-    },
-    vAxis: {
-      gridlines: {
-        color: 'transparent'
-      },
-      count: 3,
-      textPosition: 'in'
-    }
-  }
-};
-
-
-/**
- * Object containing default value for the Column chart wrapper.
- */
-gadash.gviz.columnChart = {
-  'type': 'ColumnChart',
-  'chartOptions': {
-    legend: {
-      position: 'top',
-      alignment: 'start'
-    },
-    colors: ['#058dc7'],
-    hAxis: {
-      gridlines: {
-        count: 3,
-        color: 'transparent'
-      },
-      baselineColor: 'transparent'
-    },
-    vAxis: {
-      gridlines: {
-        color: '#efefef',
-        count: 3
-      },
-      minValue: 0,
-      textPosition: 'in'
-    }
-  }
 };
 
 
@@ -1321,3 +1192,166 @@ gadash.GaColumnChart = function(div, ids, metrics, opt_config) {
  * Make GaColumnChart a subclass of Chart class using chaining inheritance.
  */
 gadash.GaColumnChart.prototype = new gadash.Chart();
+
+
+/**
+ * Object containing default value for the chartOptions object.
+ * This object is used by all chart wrappers.
+ */
+gadash.gviz.defaultChartOptions = {
+  'chartOptions': {
+    height: 300,
+    width: 450,
+    fontSize: 12,
+    curveType: 'function',
+    titleTextStyle: {
+      fontName: 'Arial',
+      fontSize: 15,
+      bold: false
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Line chart wrapper.
+ */
+gadash.gviz.lineChart = {
+  'type': 'LineChart',
+  'chartOptions': {
+    pointSize: 6,
+    lineWidth: 4,
+    areaOpacity: 0.1,
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      format: 'MMM d',
+      gridlines: {color: 'transparent'},
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        logScale: 'true',
+        count: 3
+      },
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Area chart wrapper.
+ */
+gadash.gviz.areaChart = {
+  'type': 'AreaChart',
+  'chartOptions': {
+    pointSize: 6,
+    lineWidth: 4,
+    areaOpacity: 0.1,
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      format: 'MMM d',
+      gridlines: {
+        count: 3,
+        color: 'transparent'
+      },
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        logScale: 'true',
+        count: 3
+      },
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Pie chart wrapper.
+ */
+gadash.gviz.pieChart = {
+  'type': 'PieChart',
+  'chartOptions': {
+    legend: {
+      position: 'right',
+      textStyle: {
+        bold: 'true',
+        fontSize: 13
+      },
+      alignment: 'center',
+      pieSliceText: 'none'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the bar chart wrapper.
+ */
+gadash.gviz.barChart = {
+  'type': 'BarChart',
+  'chartOptions': {
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      gridlines: {
+        count: 3,
+        color: '#efefef'
+      },
+      minValue: 0,
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: 'transparent'
+      },
+      count: 3,
+      textPosition: 'in'
+    }
+  }
+};
+
+
+/**
+ * Object containing default value for the Column chart wrapper.
+ */
+gadash.gviz.columnChart = {
+  'type': 'ColumnChart',
+  'chartOptions': {
+    legend: {
+      position: 'top',
+      alignment: 'start'
+    },
+    colors: ['#058dc7'],
+    hAxis: {
+      gridlines: {
+        count: 3,
+        color: 'transparent'
+      },
+      baselineColor: 'transparent'
+    },
+    vAxis: {
+      gridlines: {
+        color: '#efefef',
+        count: 3
+      },
+      minValue: 0,
+      textPosition: 'in'
+    }
+  }
+};

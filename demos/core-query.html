@@ -1,0 +1,101 @@
+<!DOCTYPE>
+<html>
+<head><title>Google Analytics EZ Dashboard Demo</title></head>
+<body>
+  <h1>Google Analytics Easy Dashboard Sample</h1>
+  <p>This is a simple demo for the
+     <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+       ga-dash library</a>.</p>
+
+  <p>This demo shows how to use the base <code>CoreQuery</code> object to
+     query the API and handle the results.</p>
+
+  <!-- Display the auth interface -->
+  <div id="gadash-auth">Loading ...</div>
+
+  <hr>
+  <p>Enter your Table ID: <input type="text" id="tableId">
+     <button onclick="renderGraph()">Draw Charts</button><br>
+     (Format ga:xxx where xxx is your profile ID)
+  </p>
+  <hr>
+  <div id="ui" style="display:none">
+    <h3>Top 100 Traffic Sources</h3>
+    <div id='myTable'></div>
+
+  <div>
+
+  <!-- Load the gadash.js library -->
+  <script src="../out/gadash-2.0-min.js"></script>
+  <script>
+  gadash.configKeys({
+    'apiKey': 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+    'clientId':'821751250764.apps.googleusercontent.com'
+  });
+
+
+  // Create new Chart.
+  var coreQuery = new gadash.CoreQuery();
+
+  /**
+   * Handler for the run demo button.
+   * Uses the table ID in the form to update the baseConfig object. Then
+   * sets baseConfig into each of the charts. Then each chart's specific
+   * configuration parameters are set. Finally all are rendered.
+   */
+  function renderGraph() {
+     coreQuery.set({
+       query: {
+         'ids': document.getElementById('tableId').value,
+         'dimensions': 'ga:source,ga:medium',
+         'metrics': 'ga:visits',
+         'sort': '-ga:visits',
+         'max-results': 100
+       },
+       onSuccess: displayResults
+     }).render();
+
+     // Display UI.
+     document.getElementById('ui').style.display = 'block';
+   }
+
+  /**
+   * OnSuccess function to manually handle the results.
+   * This just output the API results into a basic table.
+   * Each output value is HTML escaped using the util library.
+   * @param {Object} results The results returned by the API.
+   *     If any API errors occured, the library will not execute this
+   *     function. Instead the onError method is called.
+   */
+  function displayResults(results) {
+    var output = [];
+    if (!results.rows || !results.rows.length) {
+      output.push('No Results Found');
+    } else {
+      output.push('<table>');
+
+      // Display column headers.
+      var row = [];
+      for (var i=0, header; header = results.columnHeaders[i]; ++i) {
+        row.push(gadash.util.htmlEscape(header.name));
+      }
+      output.push('<tr><th>', row.join('</th><th>'), '</th></tr>');
+
+      // Display all table rows.
+      for (var i=0, row; row = results.rows[i]; ++i) {
+        var outputRow = [];
+        for (var j=0, cell; cell = row[j]; ++j) {
+          outputRow.push(gadash.util.htmlEscape(cell));
+        }
+        output.push('<tr><td>', outputRow.join('</td><td>'), '</td></tr>');
+      }
+
+      output.push('</table>');
+    }
+    document.getElementById('myTable').innerHTML = output.join('');
+  }
+
+
+  </script>
+</body>
+</html>
