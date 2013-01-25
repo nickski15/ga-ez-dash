@@ -13,6 +13,13 @@ And I'm going to be adding demos on this page: http://nickski15.github.com/ga-ez
 Changelog
 ---------
 
+### version 2.0.0
+- added new CoreQuery class; useful to create your own custom visualizations
+- library moved to /out folder; contains library + minified version
+- codebase split into multiple files under /src
+- new BUILD file added; include lint checks
+
+
 ### version 1.0.1
 - new scope added to auth
 - logged-in user email address now displayed; new logout button added
@@ -21,6 +28,6 @@ Changelog
 - default of last 28 days added to all Charts
 
 
-### Version 1.0
+### Version 1.0.0
 - initial commit
 
