@@ -34,7 +34,13 @@ var gadash = gadash || {};
 
 
 /**
- * Stoes user information returned from the OAuth API.
+ * Namespace for the auth module.
+ */
+gadash.auth = gadash.auth || {};
+
+
+/**
+ * Stoes user information returned from the OAuth User API.
  */
 gadash.userInfo = {};
 
@@ -48,8 +54,9 @@ gadash.isLoaded = false;
 /**
  * An array for all the oauth2 scopes to authorize the user for.
  * @const {Array}
+ * @private
  */
-gadash.SCOPES = [
+gadash.auth.SCOPES_ = [
   'https://www.googleapis.com/auth/analytics.readonly',
   'https://www.googleapis.com/auth/userinfo.email'];
 
@@ -80,8 +87,8 @@ gadash.init = function(settings) {
 
   /*
    * Dynamically loads the Google Visualization, and Google JavaScript API
-   * Client library. Once both are done loading, the window.gadashInit_ method
-   * is executed.
+   * Client library. Once both are done loading, the
+   * window.gadashInit_ method is executed.
    */
   gadash.util.loadJs_([
     'https://www.google.com/jsapi?autoload=' + encodeURIComponent(
@@ -100,7 +107,7 @@ gadash.init = function(settings) {
  */
 window.gadashInit_ = function() {
   gapi.client.setApiKey(gadash.apiKey);
-  window.setTimeout(gadash.checkAuth_, 1);
+  window.setTimeout(gadash.auth.checkAuth_, 1);
 };
 
 
@@ -110,11 +117,11 @@ window.gadashInit_ = function() {
  * called.
  * @private
  */
-gadash.checkAuth_ = function() {
+gadash.auth.checkAuth_ = function() {
   gapi.auth.authorize({
     client_id: gadash.clientId,
-    scope: gadash.SCOPES,
-    immediate: true}, gadash.handleAuthResult_);
+    scope: gadash.auth.SCOPES_,
+    immediate: true}, gadash.auth.handleAuthResult_);
 };
 
 
@@ -129,12 +136,12 @@ gadash.checkAuth_ = function() {
  *     to their data. If it exists, the user has authorized access.
  * @private
  */
-gadash.handleAuthResult_ = function(authResult) {
+gadash.auth.handleAuthResult_ = function(authResult) {
   if (authResult) {
     gapi.client.setApiVersions({'analytics': 'v3'});
-    gapi.client.load('analytics', 'v3', gadash.loadUserName_);
+    gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
   } else {
-    gadash.handleUnAuthorized();
+    gadash.auth.handleUnAuthorized();
   }
 };
 
@@ -145,10 +152,10 @@ gadash.handleAuthResult_ = function(authResult) {
  * handleAuthorized is called.
  * @private
  */
-gadash.loadUserName_ = function() {
+gadash.auth.loadUserName_ = function() {
   gapi.client.request({
     'path': '/oauth2/v2/userinfo'
-  }).execute(gadash.loadUserNameHander_);
+  }).execute(gadash.auth.loadUserNameHander_);
 };
 
 
@@ -161,11 +168,11 @@ gadash.loadUserName_ = function() {
  * @param {Object} response The response returned from the user info API.
  * @private
  */
-gadash.loadUserNameHander_ = function(response) {
+gadash.auth.loadUserNameHander_ = function(response) {
   gadash.userInfo = response;
-  gadash.handleAuthorized();
+  gadash.auth.handleAuthorized();
   gadash.isLoaded = true;
-  gadash.executeCommandQueue_();
+  gadash.auth.executeCommandQueue_();
 };
 
 
@@ -175,7 +182,7 @@ gadash.loadUserNameHander_ = function(response) {
  * function to render all CoreQuerys in the commandQueue. The execution of the
  * command queue only happens once.
  */
-gadash.handleAuthorized = function() {
+gadash.auth.handleAuthorized = function() {
   var status = 'You are authorized';
   if (gadash.userInfo.email) {
     status += ' as ' + gadash.util.htmlEscape(gadash.userInfo.email);
@@ -196,10 +203,11 @@ gadash.handleAuthorized = function() {
  * some elements on the screen. It also adds the handleAuthClick
  * click handler to the authorize-button.
  */
-gadash.handleUnAuthorized = function() {
+gadash.auth.handleUnAuthorized = function() {
   document.getElementById('gadash-auth').innerHTML =
       '<button id="authorize-button">Authorize Analytics</button>';
-  document.getElementById('authorize-button').onclick = gadash.handleAuthClick_;
+  document.getElementById('authorize-button').onclick =
+      gadash.auth.handleAuthClick_;
 };
 
 
@@ -209,11 +217,11 @@ gadash.handleUnAuthorized = function() {
  * @param {Object} event - event when button is clicked.
  * @private
  */
-gadash.handleAuthClick_ = function(event) {
+gadash.auth.handleAuthClick_ = function(event) {
   gapi.auth.authorize({
     client_id: gadash.clientId,
-    scope: gadash.SCOPES,
-    immediate: false}, gadash.handleAuthResult_);
+    scope: gadash.auth.SCOPES_,
+    immediate: false}, gadash.auth.handleAuthResult_);
   return false;
 };
 
@@ -222,7 +230,7 @@ gadash.handleAuthClick_ = function(event) {
  * Iterates through all commands on the commandQueue and executes them.
  * @private
  */
-gadash.executeCommandQueue_ = function() {
+gadash.auth.executeCommandQueue_ = function() {
   for (var i = 0, command; command = gadash.commandQueue_[i]; ++i) {
     command();
   }
