@@ -58,8 +58,9 @@ gadash.SCOPES = [
  * List of functions that are queued for execution. This is only used
  * until all the libraries have fully loaded.
  * @type {Array}
+ * @private
  */
-gadash.commandQueue = [];
+gadash.commandQueue_ = [];
 
 
 /**
@@ -79,7 +80,7 @@ gadash.init = function(settings) {
 
   /*
    * Dynamically loads the Google Visualization, and Google JavaScript API
-   * Client library. Once both are done loading, the window.gadashInit method
+   * Client library. Once both are done loading, the window.gadashInit_ method
    * is executed.
    */
   gadash.util.loadJs_([
@@ -87,7 +88,7 @@ gadash.init = function(settings) {
         '{"modules":[{"name":"visualization","version":"1",' +
         '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
     'https://apis.google.com/js/client.js?onload=__globalCallback'
-  ], window.gadashInit, true);
+  ], window.gadashInit_, true);
 };
 
 
@@ -95,10 +96,11 @@ gadash.init = function(settings) {
  * Callback executed once the Google APIs Javascript client library has loaded.
  * The function name is specified in the onload query parameter of URL to load
  * this library. After 1 millisecond, checkAuth is called.
+ * @private
  */
-window.gadashInit = function() {
+window.gadashInit_ = function() {
   gapi.client.setApiKey(gadash.apiKey);
-  window.setTimeout(gadash.checkAuth, 1);
+  window.setTimeout(gadash.checkAuth_, 1);
 };
 
 
@@ -106,12 +108,13 @@ window.gadashInit = function() {
  * Uses the OAuth2.0 clientId to query the Google Accounts service
  * to see if the user has authorized. Once complete, handleAuthResults is
  * called.
+ * @private
  */
-gadash.checkAuth = function() {
+gadash.checkAuth_ = function() {
   gapi.auth.authorize({
     client_id: gadash.clientId,
     scope: gadash.SCOPES,
-    immediate: true}, gadash.handleAuthResult);
+    immediate: true}, gadash.handleAuthResult_);
 };
 
 
@@ -124,11 +127,12 @@ gadash.checkAuth = function() {
  * @param {Object} authResult The result object returned form the authorization
  *     service that determine whether the user has currently authorized access
  *     to their data. If it exists, the user has authorized access.
+ * @private
  */
-gadash.handleAuthResult = function(authResult) {
+gadash.handleAuthResult_ = function(authResult) {
   if (authResult) {
     gapi.client.setApiVersions({'analytics': 'v3'});
-    gapi.client.load('analytics', 'v3', gadash.loadUserName);
+    gapi.client.load('analytics', 'v3', gadash.loadUserName_);
   } else {
     gadash.handleUnAuthorized();
   }
@@ -139,8 +143,9 @@ gadash.handleAuthResult = function(authResult) {
  * Loads user information including the email address of the currently logged
  * in user from the OAuth API. Once loaded, the response is stored and
  * handleAuthorized is called.
+ * @private
  */
-gadash.loadUserName = function() {
+gadash.loadUserName_ = function() {
   gapi.client.request({
     'path': '/oauth2/v2/userinfo'
   }).execute(function(response) {
@@ -171,7 +176,7 @@ gadash.handleAuthorized = function() {
   };
 
   gadash.isLoaded = true;
-  gadash.executeCommandQueue();
+  gadash.executeCommandQueue_();
 };
 
 
@@ -184,7 +189,7 @@ gadash.handleAuthorized = function() {
 gadash.handleUnAuthorized = function() {
   document.getElementById('gadash-auth').innerHTML =
       '<button id="authorize-button">Authorize Analytics</button>';
-  document.getElementById('authorize-button').onclick = gadash.handleAuthClick;
+  document.getElementById('authorize-button').onclick = gadash.handleAuthClick_;
 };
 
 
@@ -192,21 +197,23 @@ gadash.handleUnAuthorized = function() {
  * Checks to see if user is authenticated, calls handleAuthResult
  * @return {boolean} false.
  * @param {Object} event - event when button is clicked.
+ * @private
  */
-gadash.handleAuthClick = function(event) {
+gadash.handleAuthClick_ = function(event) {
   gapi.auth.authorize({
     client_id: gadash.clientId,
     scope: gadash.SCOPES,
-    immediate: false}, gadash.handleAuthResult);
+    immediate: false}, gadash.handleAuthResult_);
   return false;
 };
 
 
 /**
  * Iterates through all commands on the commandQueue and executes them.
+ * @private
  */
-gadash.executeCommandQueue = function() {
-  for (var i = 0, command; command = gadash.commandQueue[i]; ++i) {
+gadash.executeCommandQueue_ = function() {
+  for (var i = 0, command; command = gadash.commandQueue_[i]; ++i) {
     command();
   }
 };
