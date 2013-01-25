@@ -16,8 +16,9 @@ Changelog
 ### version 2.0.0
 - added new CoreQuery class; useful to create your own custom visualizations
 - library moved to /out folder; contains library + minified version
+- gadash.configKeys renamed to gadash.init
 - codebase split into multiple files under /src
-- new BUILD file added; include lint checks
+- new BUILD file added that also performs lint checks
 
 
 ### version 1.0.1

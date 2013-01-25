@@ -148,10 +148,24 @@ gadash.handleAuthResult_ = function(authResult) {
 gadash.loadUserName_ = function() {
   gapi.client.request({
     'path': '/oauth2/v2/userinfo'
-  }).execute(function(response) {
-    gadash.userInfo = response;
-    gadash.handleAuthorized();
-  });
+  }).execute(gadash.loadUserNameHander_);
+};
+
+
+/**
+ * Handles the results for the user info API. The results from the
+ * gadash.userInfo. The onAuthorized method is called to update the UI.
+ * Once complete, the library is ready to make requests to the API.
+ * isLoaded is set to true and all the functions on the command queue
+ * are exucuted.
+ * @param {Object} response The response returned from the user info API.
+ * @private
+ */
+gadash.loadUserNameHander_ = function(response) {
+  gadash.userInfo = response;
+  gadash.handleAuthorized();
+  gadash.isLoaded = true;
+  gadash.executeCommandQueue_();
 };
 
 
@@ -162,7 +176,6 @@ gadash.loadUserName_ = function() {
  * command queue only happens once.
  */
 gadash.handleAuthorized = function() {
-
   var status = 'You are authorized';
   if (gadash.userInfo.email) {
     status += ' as ' + gadash.util.htmlEscape(gadash.userInfo.email);
@@ -174,9 +187,6 @@ gadash.handleAuthorized = function() {
   document.getElementById('authorize-button').onclick = function() {
     document.location = 'https://accounts.google.com/logout';
   };
-
-  gadash.isLoaded = true;
-  gadash.executeCommandQueue_();
 };
 
 
