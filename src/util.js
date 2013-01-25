@@ -367,15 +367,3 @@ gadash.getIncrementalCallback = function(numberOfCallbacks, finalCallback) {
   };
 };
 
-
-/**
- * Dynamically loads the Google Visualization, and Google JavaScript API
- * Client library. Once both are done loading, the window.gadashInit method
- * is executed.
- */
-gadash.util.loadJs_([
-  'https://www.google.com/jsapi?autoload=' + encodeURIComponent(
-      '{"modules":[{"name":"visualization","version":"1",' +
-      '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
-  'https://apis.google.com/js/client.js?onload=__globalCallback'
-], window.gadashInit, true);

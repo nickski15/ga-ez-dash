@@ -63,17 +63,6 @@ gadash.commandQueue = [];
 
 
 /**
- * Callback executed once the Google APIs Javascript client library has loaded.
- * The function name is specified in the onload query parameter of URL to load
- * this library. After 1 millisecond, checkAuth is called.
- */
-window.gadashInit = function() {
-  gapi.client.setApiKey(gadash.apiKey);
-  window.setTimeout(gadash.checkAuth, 1);
-};
-
-
-/**
  * Sets the API key and Client ID passed by the user.
  * This information can be found in your Google API Console.
  * @param {Object} settings - Contains the API Key and Client ID variables.
@@ -81,6 +70,29 @@ window.gadashInit = function() {
 gadash.configKeys = function(settings) {
   gadash.apiKey = settings.apiKey;
   gadash.clientId = settings.clientId;
+
+  /*
+   * Dynamically loads the Google Visualization, and Google JavaScript API
+   * Client library. Once both are done loading, the window.gadashInit method
+   * is executed.
+   */
+  gadash.util.loadJs_([
+    'https://www.google.com/jsapi?autoload=' + encodeURIComponent(
+        '{"modules":[{"name":"visualization","version":"1",' +
+        '"callback":"__globalCallback","packages":["corechart","table"]}]}'),
+    'https://apis.google.com/js/client.js?onload=__globalCallback'
+  ], window.gadashInit, true);
+};
+
+
+/**
+ * Callback executed once the Google APIs Javascript client library has loaded.
+ * The function name is specified in the onload query parameter of URL to load
+ * this library. After 1 millisecond, checkAuth is called.
+ */
+window.gadashInit = function() {
+  gapi.client.setApiKey(gadash.apiKey);
+  window.setTimeout(gadash.checkAuth, 1);
 };
 
 
