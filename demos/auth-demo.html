@@ -1,0 +1,97 @@
+<!DOCTYPE>
+<html>
+<head><title>Google Analytics EZ Dashboard Demo</title></head>
+<body>
+
+<h1>Google Analytics Easy Dashboard Sample</h1>
+<p>This is a simple demo for the
+   <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+     ga-dash library</a>.</p>
+
+<p>This demo shows how to override the default auth handlers
+   to customize your interface.</p>
+<hr>
+
+
+<!-- This is the view to tell users to authorize. -->
+<span id="unAuthView" style="visibility:hidden">
+  You must authorize to continue.
+  <button id="authorize">Authorize</button>
+</span>
+
+
+<!-- This is the view to tell users they have authorized and allow them to logout. -->
+<span id="AuthView" style="visibility:hidden">
+  You have authorized as <span id="user"></span>
+  <button id="logout">Logout</button>
+</span>
+
+<hr>
+
+<!-- Standard UI to get profile ID and button to query for reports. -->
+<div id="output" style="display:none">
+   Enter your Table ID: <input type="text" id="tableId">
+   <button onclick="renderGraph()">Draw Charts</button><br>
+   (Format ga:xxx where xxx is your profile ID)
+   <br>
+   <h3>Data Over Time</h3>
+   <div id="areaChart"></div>
+</div>
+
+
+<!-- Load the gadash.js library -->
+<script src="../out/gadash-2.0-min.js"></script>
+<script>
+gadash.init({
+  apiKey: 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+  clientId: '821751250764.apps.googleusercontent.com',
+  onUnAuthorized: handleUnAuthorized,
+  onAuthorized: handleAuthorized
+});
+
+
+/**
+ * This function is executed once all the libraries are loaded and the user
+ * is not authorized. The gadash.auth.authorize function is added as a click
+ * handler to  the authorize button and should be called to continue the auth
+ * flow.
+ */
+function handleUnAuthorized() {
+  document.getElementById('authorize').onclick = gadash.auth.authorize;
+  document.getElementById('unAuthView').style.visibility = 'visible';
+}
+
+
+/**
+ * This function is executed once the users authoizes access or the user has
+ * previously authorized access. When this runs, the gadash.userInfo.email
+ * will contain the email address of the authorized user. This can be used to
+ * provide personallize messages. You can also give the users the ability to
+ * Logout of their Google Account using the gadash.auth.accountLogout function.
+ * This function is added as a handler to the logout button. Note: The JS API
+ * does not allow you to un-authorize.
+ */
+function handleAuthorized() {
+  document.getElementById('user').innerHTML = gadash.userInfo.email;
+  document.getElementById('logout').onclick = gadash.auth.accountLogout;
+  document.getElementById('unAuthView').style.display = 'none';
+  document.getElementById('AuthView').style.visibility = 'visible';
+
+  document.getElementById('output').style.display = 'block';
+}
+
+
+/**
+ * Called when the user clicks to request data from the API.
+ */
+function renderGraph() {
+  new gadash.GaAreaChart('areaChart', document.getElementById('tableId').value,
+      'ga:visits,ga:pageviews').render();
+}
+
+
+</script>
+
+
+</body>
+</html>

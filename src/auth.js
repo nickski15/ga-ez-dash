@@ -40,6 +40,12 @@ gadash.auth = gadash.auth || {};
 
 
 /**
+ * Stores all the initalization library configurations.
+ */
+gadash.auth.config = {};
+
+
+/**
  * Stoes user information returned from the OAuth User API.
  */
 gadash.userInfo = {};
@@ -72,18 +78,30 @@ gadash.commandQueue_ = [];
 
 /**
  * Initializes the ga-ez-dash library. This must be called before any of the
- * library is used.
+ * library is used. Both the apiKey and clientId properties are required.
+ * Optionally you can override the default behavor when a user either
+ * has authorized access or when they un authorized access.
  *
  * Usage:
  * daash.init({
- *   apiKey: 'API Key found in Google APIs Console',
- *   clientId: 'Client ID found in Google APIs Console'
+ *   apiKey: 'API Key found in Google APIs Console',     // required.
+ *   clientId: 'Client ID found in Google APIs Console'  // required.
+ *   onUnAuthorized: function() {},
+ *   onAuthorized: function() {}
  * })
- * @param {Object} settings - Contains initalization settings.
+ * @param {Object} authConfig Contains initalization settings.
  */
-gadash.init = function(settings) {
-  gadash.apiKey = settings.apiKey;
-  gadash.clientId = settings.clientId;
+gadash.init = function(authConfig) {
+  gadash.auth.config = authConfig;
+
+  // Set default auth handlers if not overridden.
+  if (!authConfig.onUnAuthorized) {
+    gadash.auth.config.onUnAuthorized = gadash.auth.onUnAuthorizedDefault;
+  }
+
+  if (!authConfig.onAuthorized) {
+    gadash.auth.config.onAuthorized = gadash.auth.onAuthorizedDefault;
+  }
 
   /*
    * Dynamically loads the Google Visualization, and Google JavaScript API
@@ -100,13 +118,54 @@ gadash.init = function(settings) {
 
 
 /**
+ * Updates the UI if a user has not yet authorized this script to access
+ * their Google Analytics data. This function changes the visibility of
+ * some elements on the screen. It also adds the handleAuthClick
+ * click handler to the authorize-button.
+ */
+gadash.auth.onUnAuthorizedDefault = function() {
+  document.getElementById('gadash-auth').innerHTML =
+      '<button id="authorize-button">Authorize Analytics</button>';
+  document.getElementById('authorize-button').onclick = gadash.auth.authorize;
+};
+
+
+/**
+ * Updates the UI once the user has authorized this script to access their
+ * data by hiding the authorize button. Also, runs executeCommandQueue
+ * function to render all CoreQuerys in the commandQueue. The execution of the
+ * command queue only happens once.
+ */
+gadash.auth.onAuthorizedDefault = function() {
+  var status = 'You are authorized';
+  if (gadash.userInfo.email) {
+    status += ' as ' + gadash.userInfo.email;
+  }
+
+  document.getElementById('gadash-auth').innerHTML =
+      status + ' <button id="authorize-button">Logout</button>';
+
+  document.getElementById('authorize-button').onclick =
+      gadash.auth.accountLogout;
+};
+
+
+/**
+ * Logs a user out of all their Google Accounts.
+ */
+gadash.auth.accountLogout = function() {
+  window.document.location = 'https://accounts.google.com/logout';
+};
+
+
+/**
  * Callback executed once the Google APIs Javascript client library has loaded.
  * The function name is specified in the onload query parameter of URL to load
  * this library. After 1 millisecond, checkAuth is called.
  * @private
  */
 window.gadashInit_ = function() {
-  gapi.client.setApiKey(gadash.apiKey);
+  gapi.client.setApiKey(gadash.auth.config.apiKey);
   window.setTimeout(gadash.auth.checkAuth_, 1);
 };
 
@@ -119,7 +178,7 @@ window.gadashInit_ = function() {
  */
 gadash.auth.checkAuth_ = function() {
   gapi.auth.authorize({
-    client_id: gadash.clientId,
+    client_id: gadash.auth.config.clientId,
     scope: gadash.auth.SCOPES_,
     immediate: true}, gadash.auth.handleAuthResult_);
 };
@@ -141,7 +200,7 @@ gadash.auth.handleAuthResult_ = function(authResult) {
     gapi.client.setApiVersions({'analytics': 'v3'});
     gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
   } else {
-    gadash.auth.handleUnAuthorized();
+    gadash.auth.config.onUnAuthorized();
   }
 };
 
@@ -149,7 +208,7 @@ gadash.auth.handleAuthResult_ = function(authResult) {
 /**
  * Loads user information including the email address of the currently logged
  * in user from the OAuth API. Once loaded, the response is stored and
- * handleAuthorized is called.
+ * onAuthorizedDefault is called.
  * @private
  */
 gadash.auth.loadUserName_ = function() {
@@ -170,56 +229,25 @@ gadash.auth.loadUserName_ = function() {
  */
 gadash.auth.loadUserNameHander_ = function(response) {
   gadash.userInfo = response;
-  gadash.auth.handleAuthorized();
+
+  // Escape this just to be sure.
+  if (gadash.userInfo.email) {
+    gadash.userInfo.email = gadash.util.htmlEscape(gadash.userInfo.email);
+  }
+
+  gadash.auth.config.onAuthorized();
   gadash.isLoaded = true;
   gadash.auth.executeCommandQueue_();
 };
 
 
 /**
- * Updates the UI once the user has authorized this script to access their
- * data by hiding the authorize button. Also, runs executeCommandQueue
- * function to render all CoreQuerys in the commandQueue. The execution of the
- * command queue only happens once.
- */
-gadash.auth.handleAuthorized = function() {
-  var status = 'You are authorized';
-  if (gadash.userInfo.email) {
-    status += ' as ' + gadash.util.htmlEscape(gadash.userInfo.email);
-  }
-
-  document.getElementById('gadash-auth').innerHTML =
-      status + ' <button id="authorize-button">Logout</button>';
-
-  document.getElementById('authorize-button').onclick = function() {
-    document.location = 'https://accounts.google.com/logout';
-  };
-};
-
-
-/**
- * Updates the UI if a user has not yet authorized this script to access
- * their Google Analytics data. This function changes the visibility of
- * some elements on the screen. It also adds the handleAuthClick
- * click handler to the authorize-button.
- */
-gadash.auth.handleUnAuthorized = function() {
-  document.getElementById('gadash-auth').innerHTML =
-      '<button id="authorize-button">Authorize Analytics</button>';
-  document.getElementById('authorize-button').onclick =
-      gadash.auth.handleAuthClick_;
-};
-
-
-/**
  * Checks to see if user is authenticated, calls handleAuthResult
  * @return {boolean} false.
- * @param {Object} event - event when button is clicked.
- * @private
  */
-gadash.auth.handleAuthClick_ = function(event) {
+gadash.auth.authorize = function() {
   gapi.auth.authorize({
-    client_id: gadash.clientId,
+    client_id: gadash.auth.config.clientId,
     scope: gadash.auth.SCOPES_,
     immediate: false}, gadash.auth.handleAuthResult_);
   return false;
