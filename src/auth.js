@@ -63,11 +63,17 @@ gadash.commandQueue = [];
 
 
 /**
- * Sets the API key and Client ID passed by the user.
- * This information can be found in your Google API Console.
- * @param {Object} settings - Contains the API Key and Client ID variables.
+ * Initializes the ga-ez-dash library. This must be called before any of the
+ * library is used.
+ *
+ * Usage:
+ * daash.init({
+ *   apiKey: 'API Key found in Google APIs Console',
+ *   clientId: 'Client ID found in Google APIs Console'
+ * })
+ * @param {Object} settings - Contains initalization settings.
  */
-gadash.configKeys = function(settings) {
+gadash.init = function(settings) {
   gadash.apiKey = settings.apiKey;
   gadash.clientId = settings.clientId;
 
