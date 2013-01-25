@@ -36,6 +36,7 @@ echo 'Building...'
 
 # Outputs a concatenated file.
 cat \
+  src/auth.js \
   src/core.js \
   src/util.js \
   src/gviz.js > "out/$out_name.js"
@@ -44,6 +45,7 @@ cat \
 # Outputs a minified file.
 java -jar "$closurePath" \
   --compilation_level SIMPLE_OPTIMIZATIONS \
+  --js="src/auth.js" \
   --js="src/core.js" \
   --js="src/util.js" \
   --js="src/gviz.js" \
