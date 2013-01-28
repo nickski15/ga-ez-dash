@@ -59,6 +59,7 @@ gadash.init({
 function handleUnAuthorized() {
   document.getElementById('authorize').onclick = gadash.auth.authorize;
   document.getElementById('unAuthView').style.visibility = 'visible';
+  return false;
 }
 
 
@@ -78,6 +79,7 @@ function handleAuthorized() {
   document.getElementById('AuthView').style.visibility = 'visible';
 
   document.getElementById('output').style.display = 'block';
+  return false;
 }
 
 

@@ -40,9 +40,12 @@ gadash.auth = gadash.auth || {};
 
 
 /**
- * Stores all the initalization library configurations.
+ * Stores all the initalization library default configurations.
  */
-gadash.auth.config = {};
+gadash.auth.config = {
+  onAuthorized: function() {},
+  onUnAuthorized: function() {}
+};
 
 
 /**
@@ -92,16 +95,16 @@ gadash.commandQueue_ = [];
  * @param {Object} authConfig Contains initalization settings.
  */
 gadash.init = function(authConfig) {
-  gadash.auth.config = authConfig;
+  gadash.util.extend(authConfig, gadash.auth.config);
 
-  // Set default auth handlers if not overridden.
-  if (!authConfig.onUnAuthorized) {
+  /* Set default auth handlers if not overridden.
+  if (authConfig.onUnAuthorized) {
     gadash.auth.config.onUnAuthorized = gadash.auth.onUnAuthorizedDefault;
   }
 
   if (!authConfig.onAuthorized) {
     gadash.auth.config.onAuthorized = gadash.auth.onAuthorizedDefault;
-  }
+  }*/
 
   /*
    * Dynamically loads the Google Visualization, and Google JavaScript API
@@ -189,7 +192,8 @@ gadash.auth.checkAuth_ = function() {
  * authorized access to their Google Analytics data. If the user has authorized
  * access, the analytics api library is loaded and the loadUserName
  * function is executed. If the user has not authorized access to their data,
- * the handleUnauthorized function is executed.
+ * the user overridable onUnAuthorized function is executed. If the function
+ * does not return false, then onUnAuthorizedDefault is executed.
  * @param {Object} authResult The result object returned form the authorization
  *     service that determine whether the user has currently authorized access
  *     to their data. If it exists, the user has authorized access.
@@ -200,7 +204,10 @@ gadash.auth.handleAuthResult_ = function(authResult) {
     gapi.client.setApiVersions({'analytics': 'v3'});
     gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
   } else {
-    gadash.auth.config.onUnAuthorized();
+
+    if (gadash.auth.config.onUnAuthorized() !== false) {
+      gadash.auth.onUnAuthorizedDefault();
+    }
   }
 };
 
@@ -220,7 +227,9 @@ gadash.auth.loadUserName_ = function() {
 
 /**
  * Handles the results for the user info API. The results from the
- * gadash.userInfo. The onAuthorized method is called to update the UI.
+ * gadash.userInfo. The user overrideable onAuthorized handler is
+ * executed. If it does not return false, then the default handler
+ * is executed to update the UI.
  * Once complete, the library is ready to make requests to the API.
  * isLoaded is set to true and all the functions on the command queue
  * are exucuted.
@@ -235,7 +244,10 @@ gadash.auth.loadUserNameHander_ = function(response) {
     gadash.userInfo.email = gadash.util.htmlEscape(gadash.userInfo.email);
   }
 
-  gadash.auth.config.onAuthorized();
+  if (gadash.auth.config.onAuthorized() !== false) {
+    gadash.auth.onAuthorizedDefault();
+  }
+
   gadash.isLoaded = true;
   gadash.auth.executeCommandQueue_();
 };
