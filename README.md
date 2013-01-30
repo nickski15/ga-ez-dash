@@ -17,7 +17,9 @@ Changelog
 - gadash.configKeys renamed to gadash.init
 - gadash.init accepts onAuthorized and onUnAuthorized methods to override
   default auth handlers
+- config object support onRequest, onResponse, onSuccess, and onError handlers
 - added new CoreQuery class; useful to create your own custom visualizations
+- added dynamic loaders to all Chart objects
 - library moved to /out folder; contains library + minified version
 - codebase split into multiple files under /src
 - new BUILD file added that also performs lint checks
