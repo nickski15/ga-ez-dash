@@ -59,6 +59,29 @@ gadash.Chart.prototype = new gadash.CoreQuery();
 
 
 /**
+ * Adds a loading message to the div in which the chart is rendered.
+ */
+gadash.Chart.prototype.onRequestDefault = function() {
+  document.getElementById(this.config.divContainer).innerHTML = [
+    '<div class="ga-loader" ',
+    'style="color:#777;font-size:18px;overflow:hidden">',
+    '<img style="display:block;float:left" src="',
+    gadash.util.getLoaderUri(), '">',
+    '<div style="margin:6px 0 0 12px;float:left">Loading...</div></p>'
+  ].join('');
+};
+
+
+/**
+ * Removes all content from the div in which the chart is rendered.
+ */
+gadash.Chart.prototype.onResponseDefault = function() {
+  document.getElementById(this.config.divContainer).innerHTML = '';
+
+};
+
+
+/**
  * Default callback for creating Google Charts with a response. First, the
  * response is put into a DataTable object Second, the corresponding chart
  * is returned. The two are then combined to draw a query that is populated
