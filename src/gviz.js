@@ -65,7 +65,7 @@ gadash.Chart.prototype = new gadash.CoreQuery();
  * with the GA data.
  * @param {Object} response A Google Analytics API JSON response.
  */
-gadash.Chart.prototype.defaultOnSuccess = function(response) {
+gadash.Chart.prototype.onSuccessDefault = function(response) {
   var dataTable = gadash.gviz.getDataTable(response, this.config.type);
   var chart = gadash.gviz.getChart(this.config.divContainer, this.config.type);
   gadash.gviz.draw(chart, dataTable, this.config.chartOptions);

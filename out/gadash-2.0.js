@@ -40,12 +40,9 @@ gadash.auth = gadash.auth || {};
 
 
 /**
- * Stores all the initalization library default configurations.
+ * Stores all the initalization configurations.
  */
-gadash.auth.config = {
-  onAuthorized: function() {},
-  onUnAuthorized: function() {}
-};
+gadash.auth.config = {};
 
 
 /**
@@ -205,7 +202,11 @@ gadash.auth.handleAuthResult_ = function(authResult) {
     gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
   } else {
 
-    if (gadash.auth.config.onUnAuthorized() !== false) {
+    if (gadash.util.getType(gadash.auth.config.onUnAuthorized) == 'function') {
+      if (gadash.auth.config.onUnAuthorized() !== false) {
+        gadash.auth.onUnAuthorizedDefault();
+      }
+    } else {
       gadash.auth.onUnAuthorizedDefault();
     }
   }
@@ -244,7 +245,11 @@ gadash.auth.loadUserNameHander_ = function(response) {
     gadash.userInfo.email = gadash.util.htmlEscape(gadash.userInfo.email);
   }
 
-  if (gadash.auth.config.onAuthorized() !== false) {
+  if (gadash.util.getType(gadash.auth.config.onAuthorized) == 'function') {
+    if (gadash.auth.config.onAuthorized() !== false) {
+      gadash.auth.onAuthorizedDefault();
+    }
+  } else {
     gadash.auth.onAuthorizedDefault();
   }
 
@@ -387,10 +392,19 @@ gadash.CoreQuery.prototype.render = function() {
  * maintained within the callback.
  */
 gadash.CoreQuery.prototype.renderFunction = function() {
+  this.executeHandlers('onRequest', 'onRequestDefault');
+
   this.setDefaultDates(this.config);
   var request = gapi.client.analytics.data.ga.get(this.config.query);
   request.execute(gadash.util.bindMethod(this, this.callback));
 };
+
+
+/**
+ * Default callback executed just before a query to the API is made.
+ * This is a no-op and should be overriden by sub-classes.
+ */
+gadash.CoreQuery.prototype.onRequestDefault = function() {};
 
 
 /**
@@ -418,58 +432,92 @@ gadash.CoreQuery.prototype.setDefaultDates = function(config) {
 /**
  * Callback function that is called after a GA query is executed.
  * First, the function checks to see if there are any errors on the
- * response. Then check to see if a onSuccess function was declared
- * in the config. If present, call onSuccess by first binding it to
- * this (ie this CoreQuery object instance). If not defined, just use
- * the default callback. The entire JSON response from the API
- * is passed to either defined or default callback.
+ * response.
+ * If an error occured, if the config object contains a method
+ * named onError, it is executed and is passed the error object returned
+ * from the API. If the the onError does not return false, the default
+ * error handler is executed.
+ * If the API query was successful, if the config object contains a method
+ * named onSuccess, it is executed nd passed the response form the API. If
+ * the onSuccess function does not return false, the onSuccessDefault
+ * function is called.
+ * Both the onSuccess and onError functions are executed in the context
+ * of the CoreQuery object.
  * @param {Object} response - Google Analytics API JSON response.
  */
 gadash.CoreQuery.prototype.callback = function(response) {
-  if (response.error) {
-    this.defaultOnError(response.error.code + ' ' + response.error.message);
-  } else {
 
-    if (this.config.onSuccess) {
-      gadash.util.bindMethod(this, this.config.onSuccess)(response);
-    } else {
-      this.defaultOnSuccess(response);
-    }
+  this.executeHandlers('onResponse', 'onResponseDefault');
+
+  if (response.error) {
+    // API encountered an error.
+    this.executeHandlers('onError', 'onErrorDefault', response.error);
+
+  } else {
+    // Successful response.
+    this.executeHandlers('onSuccess', 'onSuccessDefault', response);
   }
 };
 
 
 /**
- * Checks to see if onError parameter is set in config. If it is,
- * use the user defined error function else check to see if an error
- * div is created. If not, create an error div. Print error message
- * to the error div.
- * @param {String} message - error message to print.
+ * Helper method to execute default and user defined methods.
+ * First checks to see if a user function is defined on the config object.
+ * if it is, it's executed in the context of this object and passed the
+ * args parameter. Next if the user function does not return false,
+ * the default function handler is executed in the context of this object,
+ * and also passed the args parameter.
+ * @param {String} userFunction The name of the user defined function to be
+ *     found on the config object.
+ * @param {String} defaultFunction The name of the defaul function to be
+ *     executed if no user function is found.
+ * @param {Object=} opt_args The parameter to pass to both functions above.
  */
-gadash.CoreQuery.prototype.defaultOnError = function(message) {
+gadash.CoreQuery.prototype.executeHandlers = function(
+    userFunction, defaultFunction, opt_args) {
 
-  // If onError param exists, use that as error handling function.
-  if (this.config.onError) {
-    this.config.onError(message);
-  } else {
-
-    var errorDiv = document.getElementById('errors');
-
-    // Create error div if not already made.
-    if (!errorDiv) {
-      errorDiv = document.createElement('div');
-      errorDiv.style.color = 'red';
-      errorDiv.setAttribute('id', 'errors');
-      errorDiv.innerHTML = 'ERRORS:' + '<br />';
-      document.body.appendChild(errorDiv);
+  if (gadash.util.getType(this.config[userFunction]) == 'function') {
+    if (gadash.util.bindMethod(this,
+        this.config[userFunction])(opt_args) !== false) {
+      this[defaultFunction](opt_args);
     }
-
-    // TODO(nm): Need better error handling.
-    // Prints CoreQuery divContainer and message to error div.
-    errorDiv.innerHTML += ' error: ' + message + '<br />';
-    //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
-    //    message + '<br />';
+  } else {
+    this[defaultFunction](opt_args);
   }
+};
+
+
+/**
+ * Default callback once the API has returned with a response.
+ * This is a no-op and should be overriden by sub-classes.
+ */
+gadash.CoreQuery.prototype.onResponseDefault = function() {};
+
+
+/**
+ * Checks to see if there is an element with the ID of errors.
+ * If not, a div is created with this ID.
+ * The error message is formatted and printed to this div.
+ * @param {String} error The error object returned by the API.
+ */
+gadash.CoreQuery.prototype.onErrorDefault = function(error) {
+  var errorDiv = document.getElementById('errors');
+
+  // Create error div if not already made.
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.setAttribute('id', 'errors');
+    errorDiv.innerHTML = 'ERRORS:' + '<br />';
+    document.body.appendChild(errorDiv);
+  }
+
+  // TODO(nm): Need better error handling. + html escape.
+  // Prints CoreQuery divContainer and message to error div.
+  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
+      error.message + '<br />';
+  //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
+  //    message + '<br />';
 };
 
 
@@ -478,7 +526,7 @@ gadash.CoreQuery.prototype.defaultOnError = function(message) {
  * This is a no-op and should be overridden by a developer.
  * @param {Object} response A Google Analytics API JSON response.
  */
-gadash.CoreQuery.prototype.defaultOnSuccess = function(response) {};
+gadash.CoreQuery.prototype.onSuccessDefault = function(response) {};
 // Copyright 2012 Google Inc. All Rights Reserved.
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
@@ -736,6 +784,7 @@ gadash.util.getType = function(value) {
     '[object Array]': 'array',
     '[object Date]': 'date',
     '[object RegExp]': 'regex',
+    '[object Function]': 'function',
     '[object Object]' : 'object'
   })[classStringName];
 };
@@ -915,7 +964,7 @@ gadash.Chart.prototype = new gadash.CoreQuery();
  * with the GA data.
  * @param {Object} response A Google Analytics API JSON response.
  */
-gadash.Chart.prototype.defaultOnSuccess = function(response) {
+gadash.Chart.prototype.onSuccessDefault = function(response) {
   var dataTable = gadash.gviz.getDataTable(response, this.config.type);
   var chart = gadash.gviz.getChart(this.config.divContainer, this.config.type);
   gadash.gviz.draw(chart, dataTable, this.config.chartOptions);

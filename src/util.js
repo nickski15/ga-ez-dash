@@ -255,6 +255,7 @@ gadash.util.getType = function(value) {
     '[object Array]': 'array',
     '[object Date]': 'date',
     '[object RegExp]': 'regex',
+    '[object Function]': 'function',
     '[object Object]' : 'object'
   })[classStringName];
 };

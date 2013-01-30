@@ -40,12 +40,9 @@ gadash.auth = gadash.auth || {};
 
 
 /**
- * Stores all the initalization library default configurations.
+ * Stores all the initalization configurations.
  */
-gadash.auth.config = {
-  onAuthorized: function() {},
-  onUnAuthorized: function() {}
-};
+gadash.auth.config = {};
 
 
 /**
@@ -205,7 +202,11 @@ gadash.auth.handleAuthResult_ = function(authResult) {
     gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
   } else {
 
-    if (gadash.auth.config.onUnAuthorized() !== false) {
+    if (gadash.util.getType(gadash.auth.config.onUnAuthorized) == 'function') {
+      if (gadash.auth.config.onUnAuthorized() !== false) {
+        gadash.auth.onUnAuthorizedDefault();
+      }
+    } else {
       gadash.auth.onUnAuthorizedDefault();
     }
   }
@@ -244,7 +245,11 @@ gadash.auth.loadUserNameHander_ = function(response) {
     gadash.userInfo.email = gadash.util.htmlEscape(gadash.userInfo.email);
   }
 
-  if (gadash.auth.config.onAuthorized() !== false) {
+  if (gadash.util.getType(gadash.auth.config.onAuthorized) == 'function') {
+    if (gadash.auth.config.onAuthorized() !== false) {
+      gadash.auth.onAuthorizedDefault();
+    }
+  } else {
     gadash.auth.onAuthorizedDefault();
   }
 
