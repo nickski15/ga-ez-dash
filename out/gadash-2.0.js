@@ -376,7 +376,7 @@ gadash.CoreQuery.prototype.render = function() {
     this.renderFunction();
   } else {
     var renderFunction = gadash.util.bindMethod(this, this.renderFunction);
-    gadash.commandQueue.push(renderFunction);
+    gadash.commandQueue_.push(renderFunction);
   }
 
   return this;
