@@ -680,6 +680,73 @@ gadash.util.lastNdays = function(n) {
 
 
 /**
+ * Utility method to return the lastNweeks from today in the format yyyy-MM-dd.
+ * @param {Number} n The number of weeks in the past from today that we should
+ *     return a date. Value of 0 returns today.
+ * @return {String} date - The adjusted date value represented as a String.
+ */
+gadash.util.lastNweeks = function(n) {
+  var today = new Date();
+  var before = new Date();
+  n = n * 7;
+  before.setDate(today.getDate() - n);
+
+  var year = before.getFullYear();
+
+  var month = before.getMonth() + 1;
+  if (month < 10) {
+    month = '0' + month;
+  }
+
+  var day = before.getDate();
+  if (day < 10) {
+    day = '0' + day;
+  }
+
+  return [year, month, day].join('-');
+};
+
+/**
+ * Utility method to return the lastNmonths from today in the format yyyy-MM-dd.
+ * @param {Number} n The number of months in the past from today that we should
+ *     return a date. Value of 0 returns today.
+ * @return {String} date - The adjusted date value represented as a String.
+ */
+
+gadash.util.lastNmonths = function(n) {
+  var date = new Date();
+
+  if (n <= 0)
+    return [date.getFullYear(), date.getMonth() + 1 , date.getDate()].join('-');
+  var years = Math.floor(n / 12);
+  var months = n % 12;
+
+  if (years > 0)
+    date.setFullYear(date.getFullYear() - years);
+
+  if (months > 0) {
+    if (months >= date.getMonth()) {
+      date.setFullYear(date.getFullYear() - 1);
+      months = 12 - months;
+      date.setMonth(date.getMonth() + months);
+    }
+    else {
+      date.setMonth(date.getMonth() - months);
+    }
+
+
+  }
+  var day = date.getDate();
+  day = day < 10 ? '0' + day : day;
+
+  var month = date.getMonth() + 1;
+  month = month < 10 ? '0' + month : month;
+
+  return [date.getFullYear(), month, date.getDate()].join('-');
+};
+
+
+/**
  * Utility method to return Date from a String in the format yyyy-MM-dd.
  * This function is used for a Chart that has a Time Series.
  * @param {String} date - The String representation of the date.
@@ -1033,7 +1100,7 @@ gadash.gviz = gadash.gviz || {};
 /**
  * Base Chart for the Core Reporting API.
  * @param {opt_config=} opt_config An optional configuration object.
- *     See docs for usage.
+ * See docs for usage.
  * @return {Object} The newly created chart object useful for chaining.
  * @constructor.
  */
@@ -1489,7 +1556,7 @@ gadash.gviz.lineChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       format: 'MMM d',
       gridlines: {color: 'transparent'},
@@ -1520,7 +1587,7 @@ gadash.gviz.areaChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       format: 'MMM d',
       gridlines: {
@@ -1570,7 +1637,7 @@ gadash.gviz.barChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       gridlines: {
         count: 3,
@@ -1600,7 +1667,7 @@ gadash.gviz.columnChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7 ', '#d14836'],
     hAxis: {
       gridlines: {
         count: 3,
