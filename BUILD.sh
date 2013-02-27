@@ -13,7 +13,7 @@
 #
 # Once the compiler is installed, modify this variable to
 # point to the compiler jar.
-closurePath="/Users/nm/work/js/closure/compiler-latest/compiler.jar"
+closurePath="c:\Users\Osama\Documents\compiler-latest\compiler.jar"
 
 
 
