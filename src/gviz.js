@@ -41,7 +41,7 @@ gadash.gviz = gadash.gviz || {};
 /**
  * Base Chart for the Core Reporting API.
  * @param {opt_config=} opt_config An optional configuration object.
- *     See docs for usage.
+ * See docs for usage.
  * @return {Object} The newly created chart object useful for chaining.
  * @constructor.
  */
@@ -497,7 +497,7 @@ gadash.gviz.lineChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       format: 'MMM d',
       gridlines: {color: 'transparent'},
@@ -528,7 +528,7 @@ gadash.gviz.areaChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       format: 'MMM d',
       gridlines: {
@@ -578,7 +578,7 @@ gadash.gviz.barChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7', '#d14836'],
     hAxis: {
       gridlines: {
         count: 3,
@@ -608,7 +608,7 @@ gadash.gviz.columnChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7'],
+    colors: ['#058dc7 ', '#d14836'],
     hAxis: {
       gridlines: {
         count: 3,
