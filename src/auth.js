@@ -198,8 +198,8 @@ gadash.auth.checkAuth_ = function() {
  */
 gadash.auth.handleAuthResult_ = function(authResult) {
   if (authResult) {
-    gapi.client.setApiVersions({'analytics': 'v3'});
-    gapi.client.load('analytics', 'v3', gadash.auth.loadUserName_);
+    var version = gadash.auth.config.version || 'v3';
+    gapi.client.load('analytics', version, gadash.auth.loadUserName_);
   } else {
 
     if (gadash.util.getType(gadash.auth.config.onUnAuthorized) == 'function') {
