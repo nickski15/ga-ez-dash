@@ -53,7 +53,7 @@
  *     of a Chart object. This parameter is passed by value, and a deep
  *     copy is made. Once set, the original object can be modified and
  *     it will not affect this object.
- * @return {Object} this Returns a reference to the newly instantiated
+ * @return {Object} Returns a reference to the newly instantiated
  *     Chart instance. Useful for chaining methods together.
  * @constructor
  */

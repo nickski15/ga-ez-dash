@@ -23,9 +23,6 @@
     <h3>GA Line Chart</h3>
     <div id='gaLineChartDiv'></div>
 
-    <h3>GA Area Chart</h3>
-    <div id='gaAreaChartDiv'></div>
-
     <h3>GA Pie Chart</h3>
     <div id='gaPieChartDiv'></div>
 
@@ -46,19 +43,16 @@
 
 
   // Create new Chart.
-  var gaLineChart = new gadash.GaLineChart(
+  var gaLineChart = gadash.getCoreLineChart(
       'gaLineChartDiv', '', 'ga:visits,ga:pageviews');
 
-  var gaAreaChart = new gadash.GaAreaChart(
-      'gaAreaChartDiv', '', 'ga:visits,ga:pageviews');
-
-  var gaPieChart = new gadash.GaPieChart(
+  var gaPieChart = gadash.getCorePieChart(
       'gaPieChartDiv', '', 'ga:pageviews', 'ga:source');
 
-  var gaBarChart = new gadash.GaBarChart(
+  var gaBarChart = gadash.getCoreBarChart(
       'gaBarChartDiv', '', 'ga:visits');
 
-  var gaColumnChart = new gadash.GaColumnChart(
+  var gaColumnChart = gadash.getCoreColumnChart(
       'gaColumnChartDiv', '', 'ga:visits');
 
   /**
@@ -75,7 +69,6 @@
        }
      };
      gaLineChart.set(config).render();
-     gaAreaChart.set(config).render();
      gaPieChart.set(config).render();
      gaBarChart.set(config).render();
      gaColumnChart.set(config).render();

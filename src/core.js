@@ -35,17 +35,32 @@ gadash.core = gadash.core || {};
 
 
 /**
- * Core Query bulder.
+ * Core Query Builder. This returns a basic object to query the Core Reporting
+ * API. Developers must override the onSuccess handler to manage the results of
+ * the API. Usage:
+ *
+ * gadash.getCoreQuery({
+ *   'last-n-days': 28,
+ *   'query': {
+ *     'ids': 'ga:1174',
+ *     'metrics': 'ga:pageviews'
+ *   },
+ *   'onSuccess': handleData
+ * });
+ *
+ * function handleData(results) {
+ *   console.log(results);
+ * }
+ *
+ * @param {Object=} opt_config An optional query configuration object.
  * @return {gadash.Query} A Query object configured to query the
  *     Core Reporting API.
  */
-gadash.getCoreQuery = function() {
-  var query = new gadash.Query({
+gadash.getCoreQuery = function(opt_config) {
+  return new gadash.Query({
     'onRequestDefault': gadash.core.onRequestDefault,
     'onErrorDefault': gadash.onErrorDefault
-  });
-
-  return query;
+  }).set(opt_config);
 };
 
 
@@ -55,7 +70,6 @@ gadash.getCoreQuery = function() {
  * on the query parameter in the config object. Finally it executes the
  * query and sets the callback to this.callback.
  * @this {gadash.Query} The Query object.
- * @override
  */
 gadash.core.onRequestDefault = function() {
   gadash.core.setDefaultDates(this.config);
@@ -76,7 +90,7 @@ gadash.core.setDefaultDates = function(config) {
   if (config['last-n-days']) {
     config.query['end-date'] = gadash.util.lastNdays(0);
     config.query['start-date'] =
-        gadash.util.lastNdays(this.config['last-n-days']);
+        gadash.util.lastNdays(config['last-n-days']);
   } else {
     if (!config.query['start-date'] || !config.query['end-date']) {
       // Provide a default date range of last 28 days.

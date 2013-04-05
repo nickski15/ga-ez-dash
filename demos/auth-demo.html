@@ -87,7 +87,8 @@ function handleAuthorized() {
  * Called when the user clicks to request data from the API.
  */
 function renderGraph() {
-  new gadash.GaAreaChart('areaChart', document.getElementById('tableId').value,
+  gadash.getCoreLineChart('areaChart',
+      document.getElementById('tableId').value,
       'ga:visits,ga:pageviews').render();
 }
 
