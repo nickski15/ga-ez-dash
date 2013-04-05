@@ -1430,7 +1430,9 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
     'query': {
       'ids': ids,
       'metrics': metrics,
-      'dimensions': dimensions
+      'sort': '-' + metrics,
+      'dimensions': dimensions,
+      'max-results': 5
     }
   })
   .set(gadash.gviz.defaultGvizChartOptions)
@@ -1511,6 +1513,7 @@ gadash.gviz.defaultGvizChartOptions = {
     width: 450,
     fontSize: 12,
     curveType: 'function',
+    chartArea: {'width': '100%'},
     titleTextStyle: {
       fontName: 'Arial',
       fontSize: 15,
@@ -1564,7 +1567,7 @@ gadash.gviz.areaChart = {
       position: 'top',
       alignment: 'start'
     },
-    colors: ['#058dc7', '#d14836'],
+    colors: ['#058dc7'],
     hAxis: {
       format: 'MMM d',
       gridlines: {
@@ -1659,7 +1662,8 @@ gadash.gviz.columnChart = {
       },
       minValue: 0,
       textPosition: 'in'
-    }
+    },
+    chartArea: {'width': '90%'}
   }
 };
 
