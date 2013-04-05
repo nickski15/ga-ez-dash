@@ -297,10 +297,6 @@ gadash.auth.executeCommandQueue_ = function() {
 
 /**
  * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
- * @author aryabond@gmail.com (Arya Bondarian)
- * @author agau@uci.edu (Albert Gau)
- * @author travisrlai@gmail.com (Travis Lai)
- * @author danielnuwin@gmail.com (Daniel Nguyen)
  * @author nickski15@gmail.com (Nick Mihailovski)
  * @author laurent1jacquot@gmail.com (Laurent Jacquot)
  * @author ooahmad@gmail.com (Osama Ahmad)
@@ -505,10 +501,6 @@ gadash.Query.prototype.onSuccessDefault = function(response) {};
 
 /**
  * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
- * @author aryabond@gmail.com (Arya Bondarian)
- * @author agau@uci.edu (Albert Gau)
- * @author travisrlai@gmail.com (Travis Lai)
- * @author danielnuwin@gmail.com (Daniel Nguyen)
  * @author nickski15@gmail.com (Nick Mihailovski)
  * @author laurent1jacquot@gmail.com (Laurent Jacquot)
  * @author ooahmad@gmail.com (Osama Ahmad)
@@ -1164,10 +1156,6 @@ gadash.util.getLoaderUri = function() {
 
 /**
  * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
- * @author aryabond@gmail.com (Arya Bondarian)
- * @author agau@uci.edu (Albert Gau)
- * @author travisrlai@gmail.com (Travis Lai)
- * @author danielnuwin@gmail.com (Daniel Nguyen)
  * @author nickski15@gmail.com (Nick Mihailovski)
  * @author laurent1jacquot@gmail.com (Laurent Jacquot)
  * @author ooahmad@gmail.com (Osama Ahmad)
