@@ -83,11 +83,13 @@ gadash.Query.prototype.set = function(config) {
  * Query can be rendered right away. Otherwise, other operations are queued,
  * so the render command is pushed to the command queue to be executed in
  * the same order as originally called.
+ * @param {Object=} opt_config An optional query configuration object.
  * @this Points to the current Query instance.
  * @return {Object} The current instance of this Query object. Useful for
  *     chaining methods.
  */
-gadash.Query.prototype.render = function() {
+gadash.Query.prototype.render = function(opt_config) {
+  if (opt_config) this.set(opt_config);
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
