@@ -26,7 +26,7 @@
   <div>
 
   <!-- Load the gadash.js library -->
-  <script src="../out/gadash-2.0-min.js"></script>
+  <script src="../out/gadash-2.0.js"></script>
   <script>
   gadash.init({
     apiKey: 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
@@ -34,8 +34,8 @@
   });
 
 
-  // Create new Chart.
-  var coreQuery = new gadash.CoreQuery();
+  // Create new Core Query.
+  var coreQuery = gadash.getCoreQuery();
 
   /**
    * Handler for the run demo button.
