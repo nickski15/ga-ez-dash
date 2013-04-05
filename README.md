@@ -13,6 +13,17 @@ And I'm going to be adding demos on this page: http://nickski15.github.com/ga-ez
 Changelog
 ---------
 
+### version 2.1.0
+- refactored all query objects into a single Query objects
+- added methods to get various pre configured objects:
+  - gadash.getCoreQuery()
+  - gadash.getCoreLineChart()
+  - gadash.getCoreBarChart()
+  - gadash.getCorePieChart()
+  - gadash.getCoreColumnChart()
+- render method accepts an optional config object
+
+
 ### version 2.0.0
 - gadash.configKeys renamed to gadash.init
 - gadash.init accepts onAuthorized and onUnAuthorized methods to override

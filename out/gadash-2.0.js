@@ -94,15 +94,6 @@ gadash.commandQueue_ = [];
 gadash.init = function(authConfig) {
   gadash.util.extend(authConfig, gadash.auth.config);
 
-  /* Set default auth handlers if not overridden.
-  if (authConfig.onUnAuthorized) {
-    gadash.auth.config.onUnAuthorized = gadash.auth.onUnAuthorizedDefault;
-  }
-
-  if (!authConfig.onAuthorized) {
-    gadash.auth.config.onAuthorized = gadash.auth.onAuthorizedDefault;
-  }*/
-
   /*
    * Dynamically loads the Google Visualization, and Google JavaScript API
    * Client library. Once both are done loading, the
