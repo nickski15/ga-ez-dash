@@ -42,7 +42,7 @@
   });
 
 
-  // Create new Chart.
+  // Create new Charts.
   var gaLineChart = gadash.getCoreLineChart(
       'gaLineChartDiv', '', 'ga:visits,ga:pageviews');
 
@@ -54,6 +54,11 @@
 
   var gaColumnChart = gadash.getCoreColumnChart(
       'gaColumnChartDiv', '', 'ga:visits');
+
+
+  // Add charts to dashboard.
+  var dash = gadash.getDashboard([gaLineChart, gaPieChart, gaBarChart,
+      gaColumnChart]);
 
   /**
    * Handler for the run demo button.
@@ -68,11 +73,15 @@
          ids: document.getElementById('tableId').value
        }
      };
+
+     dash.execute(config);
+
+     /*
      gaLineChart.set(config).render();
      gaPieChart.set(config).render();
      gaBarChart.set(config).render();
      gaColumnChart.set(config).render();
-
+     */
 
      // Display UI.
      document.getElementById('ui').style.display = 'block';

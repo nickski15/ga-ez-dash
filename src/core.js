@@ -56,7 +56,7 @@ gadash.getCoreQuery = function(opt_config) {
   return new gadash.Query({
     'onRequestDefault': gadash.core.onRequestDefault,
     'onErrorDefault': gadash.onErrorDefault
-  }).set(opt_config);
+  }).setConfig(opt_config);
 };
 
 

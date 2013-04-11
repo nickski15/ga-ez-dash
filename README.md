@@ -15,6 +15,9 @@ Changelog
 
 ### version 2.1.0
 - refactored all query objects into a single Query objects
+- modified method name:
+  - Query.set() is now Query.setConfig()
+  - Query.render() is now Query.execute()
 - added methods to get various pre configured objects:
   - gadash.getCoreQuery()
   - gadash.getCoreLineChart()
@@ -22,6 +25,8 @@ Changelog
   - gadash.getCorePieChart()
   - gadash.getCoreColumnChart()
 - render method accepts an optional config object
+- added a new Dashboard class. This has both setConfig and execute methods,
+  to simplify managing multiple query objects as a single object.
 
 
 ### version 2.0.0

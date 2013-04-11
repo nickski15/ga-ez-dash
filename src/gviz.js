@@ -41,7 +41,7 @@ gadash.gviz = gadash.gviz || {};
 
 
 /**
- * Adds a loading message to the div in which the chart is rendered.
+ * Adds a loading message to the div in which the chart is executed.
  * Then queries the Core Reporting API.
  * @this {gadash.Query} The base Query object.
  */
@@ -58,7 +58,7 @@ gadash.gviz.onRequestDefault = function() {
 
 
 /**
- * Removes all content from the div in which the chart is rendered.
+ * Removes all content from the div in which the chart is executed.
  * @this {gadash.Query} The base Query object.
  */
 gadash.gviz.onResponseDefault = function() {
@@ -177,9 +177,9 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
 /**
  * Checks to see if the type of chart in the config is valid.
  * If it is, get its chart instance, else return a Table instance.
- * @param {String} id The ID of the HTML element in which to render
+ * @param {String} id The ID of the HTML element in which to execute
  *     the chart.
- * @param {String} chartType The type of the Chart to render.
+ * @param {String} chartType The type of the Chart to execute.
  * @return {Object} visualization - returns the Chart instance.
  */
 gadash.gviz.getChart = function(id, chartType) {
@@ -241,7 +241,9 @@ gadash.gviz.coreChartConfig = {
  * @return {gadash.Query} The newly created Query object.
  */
 gadash.getCoreChart = function(opt_config) {
-  return new gadash.Query().set(gadash.gviz.coreChartConfig).set(opt_config);
+  return new gadash.Query()
+      .setConfig(gadash.gviz.coreChartConfig)
+      .setConfig(opt_config);
 };
 
 
@@ -263,7 +265,7 @@ gadash.getCoreChart = function(opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -271,9 +273,9 @@ gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.areaChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.areaChart)
+  .setConfig(opt_config);
 };
 
 
@@ -294,7 +296,7 @@ gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -304,9 +306,9 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
       'max-results': 5
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.pieChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.pieChart)
+  .setConfig(opt_config);
 };
 
 
@@ -327,7 +329,7 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -335,9 +337,9 @@ gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.barChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.barChart)
+  .setConfig(opt_config);
 };
 
 
@@ -358,7 +360,7 @@ gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreColumnChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -366,9 +368,9 @@ gadash.getCoreColumnChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.columnChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.columnChart)
+  .setConfig(opt_config);
 };
 
 

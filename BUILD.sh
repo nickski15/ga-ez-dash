@@ -39,7 +39,8 @@ cat \
   src/query.js \
   src/core.js \
   src/util.js \
-  src/gviz.js > "out/$out_name.js"
+  src/gviz.js \
+  src/dashboard.js > "out/$out_name.js"
 
 
 # Outputs a minified file.
@@ -50,5 +51,6 @@ java -jar "$closurePath" \
   --js="src/core.js" \
   --js="src/util.js" \
   --js="src/gviz.js" \
+  --js="src/dashboard.js" \
   --js_output_file="out/$out_name-min.js"
 

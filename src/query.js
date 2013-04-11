@@ -55,7 +55,7 @@
  */
 gadash.Query = function(opt_config) {
   this.config = {};
-  this.set(opt_config);
+  this.setConfig(opt_config);
   return this;
 };
 
@@ -68,7 +68,7 @@ gadash.Query = function(opt_config) {
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Query.prototype.set = function(config) {
+gadash.Query.prototype.setConfig = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -76,23 +76,23 @@ gadash.Query.prototype.set = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * Query can be rendered right away. Otherwise, other operations are queued,
- * so the render command is pushed to the command queue to be executed in
+ * Query can be executed right away. Otherwise, other operations are queued,
+ * so the execute command is pushed to the command queue to be executed in
  * the same order as originally called.
  * @param {Object=} opt_config An optional query configuration object.
  * @this Points to the current Query instance.
  * @return {Object} The current instance of this Query object. Useful for
  *     chaining methods.
  */
-gadash.Query.prototype.render = function(opt_config) {
-  if (opt_config) this.set(opt_config);
+gadash.Query.prototype.execute = function(opt_config) {
+  if (opt_config) this.setConfig(opt_config);
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
-    this.renderFunction();
+    this.executeFunction();
   } else {
-    var renderFunction = gadash.util.bindMethod(this, this.renderFunction);
-    gadash.commandQueue_.push(renderFunction);
+    var executeFunction = gadash.util.bindMethod(this, this.executeFunction);
+    gadash.commandQueue_.push(executeFunction);
   }
   return this;
 };
@@ -106,7 +106,7 @@ gadash.Query.prototype.render = function(opt_config) {
  * is bound to the Chart instance so a reference back to this query is
  * maintained within the callback.
  */
-gadash.Query.prototype.renderFunction = function() {
+gadash.Query.prototype.executeFunction = function() {
   this.executeHandlers('onRequest', 'onRequestDefault');
 };
 
@@ -170,7 +170,7 @@ gadash.Query.prototype.executeHandlers = function(userFunction,
 
   if (gadash.util.getType(userFunc) == 'function') {
     if (gadash.util.bindMethod(this, userFunc)(opt_args) !== false &&
-        defaultfunc) {
+        defaultFunc) {
       gadash.util.bindMethod(this, defaultFunc)(opt_args);
     }
   } else if (defaultFunc) {

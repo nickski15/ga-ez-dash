@@ -41,19 +41,19 @@
    * Handler for the run demo button.
    * Uses the table ID in the form to update the baseConfig object. Then
    * sets baseConfig into each of the charts. Then each chart's specific
-   * configuration parameters are set. Finally all are rendered.
+   * configuration parameters are set. Finally all are executed.
    */
   function renderGraph() {
-     coreQuery.set({
-       query: {
+     coreQuery.setConfig({
+       'query': {
          'ids': document.getElementById('tableId').value,
          'dimensions': 'ga:source,ga:medium',
          'metrics': 'ga:visits',
          'sort': '-ga:visits',
          'max-results': 100
        },
-       onSuccess: displayResults
-     }).render();
+       'onSuccess': displayResults
+     }).execute();
 
      // Display UI.
      document.getElementById('ui').style.display = 'block';

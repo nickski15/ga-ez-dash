@@ -328,7 +328,7 @@ gadash.auth.executeCommandQueue_ = function() {
  */
 gadash.Query = function(opt_config) {
   this.config = {};
-  this.set(opt_config);
+  this.setConfig(opt_config);
   return this;
 };
 
@@ -341,7 +341,7 @@ gadash.Query = function(opt_config) {
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Query.prototype.set = function(config) {
+gadash.Query.prototype.setConfig = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -349,23 +349,23 @@ gadash.Query.prototype.set = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * Query can be rendered right away. Otherwise, other operations are queued,
- * so the render command is pushed to the command queue to be executed in
+ * Query can be executed right away. Otherwise, other operations are queued,
+ * so the execute command is pushed to the command queue to be executed in
  * the same order as originally called.
  * @param {Object=} opt_config An optional query configuration object.
  * @this Points to the current Query instance.
  * @return {Object} The current instance of this Query object. Useful for
  *     chaining methods.
  */
-gadash.Query.prototype.render = function(opt_config) {
-  if (opt_config) this.set(opt_config);
+gadash.Query.prototype.execute = function(opt_config) {
+  if (opt_config) this.setConfig(opt_config);
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
-    this.renderFunction();
+    this.executeFunction();
   } else {
-    var renderFunction = gadash.util.bindMethod(this, this.renderFunction);
-    gadash.commandQueue_.push(renderFunction);
+    var executeFunction = gadash.util.bindMethod(this, this.executeFunction);
+    gadash.commandQueue_.push(executeFunction);
   }
   return this;
 };
@@ -379,7 +379,7 @@ gadash.Query.prototype.render = function(opt_config) {
  * is bound to the Chart instance so a reference back to this query is
  * maintained within the callback.
  */
-gadash.Query.prototype.renderFunction = function() {
+gadash.Query.prototype.executeFunction = function() {
   this.executeHandlers('onRequest', 'onRequestDefault');
 };
 
@@ -443,7 +443,7 @@ gadash.Query.prototype.executeHandlers = function(userFunction,
 
   if (gadash.util.getType(userFunc) == 'function') {
     if (gadash.util.bindMethod(this, userFunc)(opt_args) !== false &&
-        defaultfunc) {
+        defaultFunc) {
       gadash.util.bindMethod(this, defaultFunc)(opt_args);
     }
   } else if (defaultFunc) {
@@ -532,7 +532,7 @@ gadash.getCoreQuery = function(opt_config) {
   return new gadash.Query({
     'onRequestDefault': gadash.core.onRequestDefault,
     'onErrorDefault': gadash.onErrorDefault
-  }).set(opt_config);
+  }).setConfig(opt_config);
 };
 
 
@@ -1172,7 +1172,7 @@ gadash.gviz = gadash.gviz || {};
 
 
 /**
- * Adds a loading message to the div in which the chart is rendered.
+ * Adds a loading message to the div in which the chart is executed.
  * Then queries the Core Reporting API.
  * @this {gadash.Query} The base Query object.
  */
@@ -1189,7 +1189,7 @@ gadash.gviz.onRequestDefault = function() {
 
 
 /**
- * Removes all content from the div in which the chart is rendered.
+ * Removes all content from the div in which the chart is executed.
  * @this {gadash.Query} The base Query object.
  */
 gadash.gviz.onResponseDefault = function() {
@@ -1308,9 +1308,9 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
 /**
  * Checks to see if the type of chart in the config is valid.
  * If it is, get its chart instance, else return a Table instance.
- * @param {String} id The ID of the HTML element in which to render
+ * @param {String} id The ID of the HTML element in which to execute
  *     the chart.
- * @param {String} chartType The type of the Chart to render.
+ * @param {String} chartType The type of the Chart to execute.
  * @return {Object} visualization - returns the Chart instance.
  */
 gadash.gviz.getChart = function(id, chartType) {
@@ -1372,7 +1372,9 @@ gadash.gviz.coreChartConfig = {
  * @return {gadash.Query} The newly created Query object.
  */
 gadash.getCoreChart = function(opt_config) {
-  return new gadash.Query().set(gadash.gviz.coreChartConfig).set(opt_config);
+  return new gadash.Query()
+      .setConfig(gadash.gviz.coreChartConfig)
+      .setConfig(opt_config);
 };
 
 
@@ -1394,7 +1396,7 @@ gadash.getCoreChart = function(opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -1402,9 +1404,9 @@ gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.areaChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.areaChart)
+  .setConfig(opt_config);
 };
 
 
@@ -1425,7 +1427,7 @@ gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -1435,9 +1437,9 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
       'max-results': 5
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.pieChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.pieChart)
+  .setConfig(opt_config);
 };
 
 
@@ -1458,7 +1460,7 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -1466,9 +1468,9 @@ gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.barChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.barChart)
+  .setConfig(opt_config);
 };
 
 
@@ -1489,7 +1491,7 @@ gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreColumnChart = function(div, ids, metrics, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).set({
+  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
       'ids': ids,
@@ -1497,9 +1499,9 @@ gadash.getCoreColumnChart = function(div, ids, metrics, opt_config) {
       'dimensions': 'ga:date'
     }
   })
-  .set(gadash.gviz.defaultGvizChartOptions)
-  .set(gadash.gviz.columnChart)
-  .set(opt_config);
+  .setConfig(gadash.gviz.defaultGvizChartOptions)
+  .setConfig(gadash.gviz.columnChart)
+  .setConfig(opt_config);
 };
 
 
@@ -1665,5 +1667,152 @@ gadash.gviz.columnChart = {
     },
     chartArea: {'width': '90%'}
   }
+};
+
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ *
+ * @fileoverview
+ * Provides the Dashboard object that allows you manage
+ * multiple Control and/or  Query objects as one. e.g. you can
+ * create 5 Query objects, add them to a Dashboard object and manage
+ * all 5 queries with a single command.
+ */
+
+
+/**
+ * Returns a new instance of a Dashboard object.
+ * @param {Object=} opt_objects Either a single or array of Query or Control
+ *     objects.
+ * @return {gadash.Dashboard} The new Dashboard instance.
+ */
+gadash.getDashboard = function(opt_objects) {
+  return new gadash.Dashboard().add(opt_objects);
+};
+
+
+
+/**
+ * Creates a new Dashboard object for managing multiple queries.
+ * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ * @constructor.
+ */
+gadash.Dashboard = function() {
+  this.controls_ = [];
+  this.charts_ = [];
+  return this;
+};
+
+
+/**
+ * Adds a new Control or Query to the dashboard. Can be a single object,
+ * or an array of objects.
+ * For example, the following are valid:
+ *   dash.add(chart1);
+ *   dash.add([chart1, chart2, chart3])
+ *
+ * This function checks the objects interface to determine whether a
+ * single parameter for object is either a Control or Query.
+ * @param {Object|Array} object An optional list of gadash.Query or
+ *     gadash.Control objects.
+ * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ */
+gadash.Dashboard.prototype.add = function(object) {
+
+  if (gadash.util.getType(object) == 'array') {
+    for (var i = 0, obj; obj = object[i]; ++i) {
+      this.add(obj);
+    }
+
+  } else if (object.getConfig && object.getValue) {
+    // Control object.
+    this.charts_.push(object);
+
+  } else if (object.setConfig && object.execute) {
+    // Query object.
+    this.charts_.push(object);
+  }
+  return this;
+};
+
+
+/**
+ * Returns all the controls in the dashboard.
+ * @return {Array.<gadash.Control>} The charts in the dashboard.
+ */
+gadash.Dashboard.prototype.getControls = function() {
+  return this.charts_;
+};
+
+
+/**
+ * Returns the config object for all controls as a single object.
+ * @return {Object} A single config object for all controls.
+ */
+gadash.Dashboard.prototype.getConfig = function() {
+  var config = {};
+  for (var i = 0, control; control = this.controls_[i]; ++i) {
+    gadash.util.extend(control.getConfig(), config);
+  }
+  return config;
+};
+
+
+/**
+ * Returns all the charts in the dashboard.
+ * @return {Array.<gadash.Query>} The charts in the dashboard.
+ */
+gadash.Dashboard.prototype.getCharts = function() {
+  return this.charts_;
+};
+
+
+/**
+ * Calls the setConfig method on all the charts in the dashboard.
+ * @param {Object} config The configuration object to set on all the
+ *     charts.
+ * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ */
+gadash.Dashboard.prototype.setConfig = function(config) {
+  for (var i = 0, chart; chart = this.charts_[i]; ++i) {
+    chart.setConfig(config);
+  }
+  return this;
+};
+
+
+/**
+ * Executes all the chart objects. This first gets all the current
+ * configuration values from any controls, then overrides them with
+ * the opt_config parameter. Finally each chart is executed.
+ * @param {Object=} opt_config An optional configuration object to set
+ *     on all the charts before rendering them.
+ * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ */
+gadash.Dashboard.prototype.execute = function(opt_config) {
+  var config = this.getConfig();
+  if (opt_config) {
+    gadash.util.extend(opt_config, config);
+  }
+  for (var i = 0, chart; chart = this.charts_[i]; ++i) {
+    chart.execute(config);
+  }
+  return this;
 };
 

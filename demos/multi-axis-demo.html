@@ -39,7 +39,7 @@
   var dataOverTime = gadash.getCoreChart();
 
   // Configuration for data over time graph.
-  dataOverTime.set({
+  dataOverTime.setConfig({
     'divContainer': 'dataOverTimeConfig',
     'last-n-days': 30,
     'type': 'LineChart',
@@ -89,7 +89,7 @@
        }
      };
 
-     dataOverTime.set(config).render();
+     dataOverTime.setConfig(config).execute();
 
      // Display UI.
      document.getElementById('ui').style.display = 'block';
