@@ -36,6 +36,7 @@ echo 'Building...'
 # Outputs a concatenated file.
 cat \
   src/auth.js \
+  src/control.js \
   src/query.js \
   src/core.js \
   src/util.js \
@@ -47,6 +48,7 @@ cat \
 java -jar "$closurePath" \
   --compilation_level SIMPLE_OPTIMIZATIONS \
   --js="src/auth.js" \
+  --js="src/control.js" \
   --js="src/query.js" \
   --js="src/core.js" \
   --js="src/util.js" \

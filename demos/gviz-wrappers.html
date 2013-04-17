@@ -41,8 +41,10 @@
     clientId: '821751250764.apps.googleusercontent.com'
   });
 
+  // Create control.
+  var tableIdControl = gadash.getTextInputControl('tableId', 'query.ids');
 
-  // Create new Charts.
+  // Create new queries.
   var gaLineChart = gadash.getCoreLineChart(
       'gaLineChartDiv', '', 'ga:visits,ga:pageviews');
 
@@ -57,31 +59,14 @@
 
 
   // Add charts to dashboard.
-  var dash = gadash.getDashboard([gaLineChart, gaPieChart, gaBarChart,
-      gaColumnChart]);
+  var dash = gadash.getDashboard([tableIdControl, gaLineChart,
+      gaPieChart, gaBarChart, gaColumnChart]);
 
   /**
    * Handler for the run demo button.
-   * Uses the table ID in the form to update the baseConfig object. Then
-   * sets baseConfig into each of the charts. Then each chart's specific
-   * configuration parameters are set. Finally all are rendered.
    */
   function renderGraph() {
-     // Add the table id to the base configuration object.
-     var config = {
-       query: {
-         ids: document.getElementById('tableId').value
-       }
-     };
-
-     dash.execute(config);
-
-     /*
-     gaLineChart.set(config).render();
-     gaPieChart.set(config).render();
-     gaBarChart.set(config).render();
-     gaColumnChart.set(config).render();
-     */
+     dash.execute();
 
      // Display UI.
      document.getElementById('ui').style.display = 'block';

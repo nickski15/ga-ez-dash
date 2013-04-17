@@ -1,0 +1,128 @@
+<!DOCTYPE>
+<html>
+<head><title>Google Analytics EZ Dashboard Demo</title></head>
+<body>
+
+<h1>Google Analytics Easy Dashboard Sample</h1>
+<p>This is a simple demo for the
+   <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+     ga-dash library</a>.</p>
+
+<p>This demo shows how to create UI controls to build a Core Reporting API query.</p>
+<hr>
+
+<!-- Display the user interface -->
+<div id="gadash-auth">Loading ...</div>
+
+<hr>
+<style>
+.qb {
+  padding: 0;
+  margin: 0;
+}
+.qb-li {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style-type: none;
+}
+.qb-e1 {
+  width: 100px;
+}
+.qb-e1, .qb-e2 {
+  float: left;
+  display: block;
+  margin-left:;
+}
+.qb-e2 {
+  margin-left: 15px;
+}
+</style>
+<ul class="qb">
+  <li class="qb-li">
+    <span class="qb-e1">Table ID: </span>
+    <input class="qb-e2" type="text" id="tableId">
+    <span class="qb-e2">(Format ga:xxx where xxx is your profile ID)</span></li>
+  <li class="qb-li">
+    <span class="qb-e1">Start Date: </span>
+    <input class="qb-e2" type="text" id="startDate">
+    <span class="qb-e2">(Format YYYY-MM-DD)</span></li>
+  <li class="qb-li">
+    <span class="qb-e1">End Date: </span>
+    <input class="qb-e2" type="text" id="endDate">
+    <span class="qb-e2">(Format YYYY-MM-DD)</span></li>
+  <li class="qb-li">
+    <span class="qb-e1">Dimensions: </span>
+    <input class="qb-e2" type="text" id="dimensions"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Metrics: </span>
+    <input class="qb-e2" type="text" id="metrics"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Segment: </span>
+    <input class="qb-e2" type="text" id="segment"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Filters: </span>
+    <input class="qb-e2" type="text" id="filters"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Sort: </span>
+    <input class="qb-e2" type="text" id="sort"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Start Index: </span>
+    <input class="qb-e2" type="text" id="startIndex"></li>
+  <li class="qb-li">
+    <span class="qb-e1">Max Results: </span>
+    <input class="qb-e2" type="text" id="maxResults"></li>
+</ul>
+
+<hr>
+
+<button onclick="displayQuery()">Display Query</button>
+
+<br><br>
+<textarea id="query" rows="4" cols="50"></textarea>
+
+<!-- Load the gadash.js library -->
+<script src="../out/gadash-2.0.js"></script>
+<script>
+gadash.init({
+  apiKey: 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+  clientId: '821751250764.apps.googleusercontent.com'
+});
+
+
+// Create some text input controls.
+var dash = gadash.getDashboard([
+  gadash.getTextInputControl('tableId', 'query.ids'),
+  gadash.getTextInputControl('startDate', 'query.start-date'),
+  gadash.getTextInputControl('endDate', 'query.end-date'),
+  gadash.getTextInputControl('dimensions', 'query.dimensions'),
+  gadash.getTextInputControl('metrics', 'query.metrics'),
+  gadash.getTextInputControl('segment', 'query.segment'),
+  gadash.getTextInputControl('filters', 'query.filters'),
+  gadash.getTextInputControl('sort', 'query.sort'),
+  gadash.getTextInputControl('startIndex', 'query.start-index'),
+  gadash.getTextInputControl('maxResults', 'query.max-results')
+]);
+
+
+function displayQuery() {
+  var config = dash.getConfig();
+
+  var output = [];
+  if (config.query) {
+    for (key in config.query) {
+      if (config.query[key] !== '') {
+        var param = key + '=' + encodeURIComponent(config.query[key]);
+        output.push(param);
+      }
+    }
+  }
+  document.getElementById('query').innerHTML = output.join('&');
+}
+
+
+</script>
+
+
+</body>
+</html>

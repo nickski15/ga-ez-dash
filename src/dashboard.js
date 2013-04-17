@@ -1,4 +1,4 @@
-// Copyright 2012 Google Inc. All Rights Reserved.
+// Copyright 2013 Google Inc. All Rights Reserved.
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@
  *
  * @fileoverview
  * Provides the Dashboard object that allows you manage
- * multiple Control and/or  Query objects as one. e.g. you can
+ * multiple Control and/or Query objects as one. e.g. you can
  * create 5 Query objects, add them to a Dashboard object and manage
- * all 5 queries with a single command.
+ * all 5 queries with a single command. Dashboards also support
+ * embedding other dashboards.
  */
 
 
 /**
  * Returns a new instance of a Dashboard object.
- * @param {Object=} opt_objects Either a single or array of Query or Control
- *     objects.
+ * @param {Object=} opt_objects Either a single or array of objects.
+ *     Typically either Query or Control objects.
  * @return {gadash.Dashboard} The new Dashboard instance.
  */
 gadash.getDashboard = function(opt_objects) {
@@ -43,8 +44,7 @@ gadash.getDashboard = function(opt_objects) {
  * @constructor.
  */
 gadash.Dashboard = function() {
-  this.controls_ = [];
-  this.charts_ = [];
+  this.objects_ = [];
   return this;
 };
 
@@ -56,9 +56,7 @@ gadash.Dashboard = function() {
  *   dash.add(chart1);
  *   dash.add([chart1, chart2, chart3])
  *
- * This function checks the objects interface to determine whether a
- * single parameter for object is either a Control or Query.
- * @param {Object|Array} object An optional list of gadash.Query or
+ * @param {object|array} object An optional list of gadash.Query or
  *     gadash.Control objects.
  * @return {gadash.Dashboard} this object. Useful for chaining methods.
  */
@@ -68,68 +66,54 @@ gadash.Dashboard.prototype.add = function(object) {
     for (var i = 0, obj; obj = object[i]; ++i) {
       this.add(obj);
     }
+  } else {
 
-  } else if (object.getConfig && object.getValue) {
-    // Control object.
-    this.charts_.push(object);
-
-  } else if (object.setConfig && object.execute) {
-    // Query object.
-    this.charts_.push(object);
+    this.objects_.push(object);
   }
   return this;
 };
 
 
 /**
- * Returns all the controls in the dashboard.
- * @return {Array.<gadash.Control>} The charts in the dashboard.
- */
-gadash.Dashboard.prototype.getControls = function() {
-  return this.charts_;
-};
-
-
-/**
- * Returns the config object for all controls as a single object.
+ * Returns the config object for all objects that support the getConfig
+ * method as a single object. Typically thse include either contol or
+ * dashboard objects.
  * @return {Object} A single config object for all controls.
  */
 gadash.Dashboard.prototype.getConfig = function() {
   var config = {};
-  for (var i = 0, control; control = this.controls_[i]; ++i) {
-    gadash.util.extend(control.getConfig(), config);
+  for (var i = 0, object; object = this.objects_[i]; ++i) {
+    if (object.getConfig) {
+      gadash.util.extend(object.getConfig(), config);
+    }
   }
   return config;
 };
 
 
 /**
- * Returns all the charts in the dashboard.
- * @return {Array.<gadash.Query>} The charts in the dashboard.
- */
-gadash.Dashboard.prototype.getCharts = function() {
-  return this.charts_;
-};
-
-
-/**
- * Calls the setConfig method on all the charts in the dashboard.
+ * Calls the setConfig method on all the objects in the dashboard that
+ * support either the setConfig method. Typically these include either
+ * query or dashboard objects.
  * @param {Object} config The configuration object to set on all the
- *     charts.
+ *     objects.
  * @return {gadash.Dashboard} this object. Useful for chaining methods.
  */
 gadash.Dashboard.prototype.setConfig = function(config) {
-  for (var i = 0, chart; chart = this.charts_[i]; ++i) {
-    chart.setConfig(config);
+  for (var i = 0, object; object = this.objects_[i]; ++i) {
+    if (object.setConfig) {
+      object.setConfig(config);
+    }
   }
   return this;
 };
 
 
 /**
- * Executes all the chart objects. This first gets all the current
+ * Executes all the objects that support the execute method.
+ * This first gets all the current
  * configuration values from any controls, then overrides them with
- * the opt_config parameter. Finally each chart is executed.
+ * the opt_config parameter. Finally each object is executed.
  * @param {Object=} opt_config An optional configuration object to set
  *     on all the charts before rendering them.
  * @return {gadash.Dashboard} this object. Useful for chaining methods.
@@ -139,8 +123,10 @@ gadash.Dashboard.prototype.execute = function(opt_config) {
   if (opt_config) {
     gadash.util.extend(opt_config, config);
   }
-  for (var i = 0, chart; chart = this.charts_[i]; ++i) {
-    chart.execute(config);
+  for (var i = 0, object; object = this.objects_[i]; ++i) {
+    if (object.execute) {
+      object.execute(config);
+    }
   }
   return this;
 };
