@@ -540,13 +540,6 @@ gadash.Query.prototype.executeFunction = function() {
 
 
 /**
- * Default callback executed just before a query to the API is made.
- * This is a no-op and should be overriden by sub-classes.
- */
-gadash.Query.prototype.onRequestDefault = function() {};
-
-
-/**
  * Callback function that is called after a GA query is executed.
  * First, the function checks to see if there are any errors on the
  * response.
@@ -606,28 +599,6 @@ gadash.Query.prototype.executeHandlers = function(userFunction,
   }
 };
 
-
-/**
- * Default callback once the API has returned with a response.
- * This is a no-op and should be overriden by sub-classes.
- */
-gadash.Query.prototype.onResponseDefault = function() {};
-
-
-/**
- * Default handler if there is an error with the query.
- * This is a no-op and should be overridden by a developer.
- * @param {String} error The error object returned by the API.
- */
-gadash.Query.prototype.onErrorDefault = function(error) {};
-
-
-/**
- * Default callback for creating Google Charts with a response.
- * This is a no-op and should be overridden by a developer.
- * @param {Object} response A Google Analytics API JSON response.
- */
-gadash.Query.prototype.onSuccessDefault = function(response) {};
 
 // Copyright 2012 Google Inc. All Rights Reserved.
 
