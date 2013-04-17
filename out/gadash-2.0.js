@@ -517,10 +517,10 @@ gadash.Query.prototype.execute = function(opt_config) {
 
   // If the client library has loaded.
   if (gadash.isLoaded) {
-    this.executeFunction();
+    this.executeFunction_();
   } else {
-    var executeFunction = gadash.util.bindMethod(this, this.executeFunction);
-    gadash.commandQueue_.push(executeFunction);
+    var executeFunction_ = gadash.util.bindMethod(this, this.executeFunction_);
+    gadash.commandQueue_.push(executeFunction_);
   }
   return this;
 };
@@ -533,9 +533,10 @@ gadash.Query.prototype.execute = function(opt_config) {
  * API request using the Chart objects callback method. The callback
  * is bound to the Chart instance so a reference back to this query is
  * maintained within the callback.
+ * @private.
  */
-gadash.Query.prototype.executeFunction = function() {
-  this.executeHandlers('onRequest', 'onRequestDefault');
+gadash.Query.prototype.executeFunction_ = function() {
+  this.executeHandlers_('onRequest', 'onRequestDefault');
 };
 
 
@@ -557,15 +558,15 @@ gadash.Query.prototype.executeFunction = function() {
  */
 gadash.Query.prototype.callback = function(response) {
 
-  this.executeHandlers('onResponse', 'onResponseDefault');
+  this.executeHandlers_('onResponse', 'onResponseDefault');
 
   if (response.error) {
     // API encountered an error.
-    this.executeHandlers('onError', 'onErrorDefault', response.error);
+    this.executeHandlers_('onError', 'onErrorDefault', response.error);
 
   } else {
     // Successful response.
-    this.executeHandlers('onSuccess', 'onSuccessDefault', response);
+    this.executeHandlers_('onSuccess', 'onSuccessDefault', response);
   }
 };
 
@@ -582,8 +583,9 @@ gadash.Query.prototype.callback = function(response) {
  * @param {String} defaultFunction The name of the defaul function to be
  *     executed if no user function is found.
  * @param {Object=} opt_args The parameter to pass to both functions above.
+ * @private
  */
-gadash.Query.prototype.executeHandlers = function(userFunction,
+gadash.Query.prototype.executeHandlers_ = function(userFunction,
     defaultFunction, opt_args) {
 
   var userFunc = this.config[userFunction];
@@ -598,7 +600,6 @@ gadash.Query.prototype.executeHandlers = function(userFunction,
     gadash.util.bindMethod(this, defaultFunc)(opt_args);
   }
 };
-
 
 // Copyright 2012 Google Inc. All Rights Reserved.
 
