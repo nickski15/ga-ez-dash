@@ -1512,28 +1512,22 @@ gadash.getCoreChart = function(opt_config) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 30 if opt_config does
- *         not specify the entries.
- * @param {String} div - contains the <div> tag id value to indicate where
- *     the chart should appear on a webpage.
- * @param {String} metrics - contains the type of metrics to be used in chart.
- * @param {String} ids - contains the TABLE_ID to access analytics data.
- * @param {Object=} opt_config - An optional configuration object.
+ *     for the start time / date range: 'last-n-days': 28
+ * @param {Object} var_args The following arguments can be passed in order:
+ *     divContainer, metrics, ids, config. The config object can be passed as
+ *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreLineChart = function(div, metrics, ids, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
-    'divContainer': div,
-    'query': {
-      'ids': ids,
-      'metrics': metrics,
-      'dimensions': 'ga:date'
-    }
-  })
+gadash.getCoreLineChart = function(var_args) {
+  // Supported arguments order: div, metrics, ids, config
+  var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
+
+  return new gadash.Query(gadash.gviz.coreChartConfig)
+  .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.areaChart)
-  .setConfig(opt_config);
+  .setConfig(argsObj.userConfig);
 };
 
 
@@ -1543,30 +1537,45 @@ gadash.getCoreLineChart = function(div, metrics, ids, opt_config) {
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
- *     for the start time / date range: 'last-n-days': 30.
- * @param {String} div Contains the <div> tag id value to indicate where
- *     the chart should appear on a webpage.
- * @param {String} metrics Contains the type of metrics to be used in chart.
- * @param {String} dimensions Contains the dimensions to be used in chart.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
- * @param {Object=} opt_config An optional configuration object.
+ *     for the start time / date range: 'last-n-days': 28.
+ * @param {Object} var_args The following arguments can be passed in order:
+ *     divContainer, metrics, ids, config. The config object can be passed as
+ *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCorePieChart = function(div, metrics, dimensions, ids, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
-    'divContainer': div,
+gadash.getCorePieChart = function(var_args) {
+  // Supported argumentsorder : div, metrics, dimensions, ids, config
+  var baseConfig = {
+    'divContainer': '',
     'query': {
-      'ids': ids,
-      'metrics': metrics,
-      'sort': '-' + metrics,
-      'dimensions': dimensions,
+      'ids': '',
+      'metrics': '',
+      'sort': '',
+      'dimensions': '',
       'max-results': 5
     }
-  })
+  };
+
+  var argSetters = [
+    function(obj, arg) {obj.divContainer = arg},
+    function(obj, arg) {
+      obj.query.metrics = arg;
+      obj.query.sort = '-' + arg;
+    },
+    function(obj, arg) {obj.query.dimensions = arg},
+    function(obj, arg) {obj.query.ids = arg}
+  ];
+
+  var argsObj = gadash.gviz.getConfigFromArgs(baseConfig, argSetters,
+      arguments);
+
+
+  return new gadash.Query(gadash.gviz.coreChartConfig)
+  .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.pieChart)
-  .setConfig(opt_config);
+  .setConfig(argsObj.userConfig);
 };
 
 
@@ -1577,27 +1586,22 @@ gadash.getCorePieChart = function(div, metrics, dimensions, ids, opt_config) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 30.
- * @param {String} div Contains the <div> tag id value to indicate where
- *     the chart should appear on a webpage.
- * @param {String} metrics Contains the type of metrics to be used in chart.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
- * @param {Object=} opt_config An optional configuration object.
+ *     for the start time / date range: 'last-n-days': 28.
+ * @param {Object} var_args The following arguments can be passed in order:
+ *     divContainer, metrics, ids, config. The config object can be passed as
+ *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreBarChart = function(div, metrics, ids, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
-    'divContainer': div,
-    'query': {
-      'ids': ids,
-      'metrics': metrics,
-      'dimensions': 'ga:date'
-    }
-  })
+gadash.getCoreBarChart = function(var_args) {
+  // Supported arguments order: div, metrics, ids, config
+  var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
+
+  return new gadash.Query(gadash.gviz.coreChartConfig)
+  .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.barChart)
-  .setConfig(opt_config);
+  .setConfig(argsObj.userConfig);
 };
 
 
@@ -1608,27 +1612,86 @@ gadash.getCoreBarChart = function(div, metrics, ids, opt_config) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 30.
- * @param {String} div Contains the <div> tag id value to indicate where
- *     the chart should appear on a webpage.
- * @param {String} metrics Contains the type of metrics to be used in chart.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
- * @param {Object=} opt_config An optional configuration object.
+ *     for the start time / date range: 'last-n-days': 28.
+ * @param {Object} var_args The following arguments can be passed in order:
+ *     divContainer, metrics, ids, config. The config object can be passed as
+ *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreColumnChart = function(div, metrics, ids, opt_config) {
-  return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
-    'divContainer': div,
-    'query': {
-      'ids': ids,
-      'metrics': metrics,
-      'dimensions': 'ga:date'
-    }
-  })
+gadash.getCoreColumnChart = function(var_args) {
+  // Supported arguments order: div, metrics, ids, config
+  var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
+
+  return new gadash.Query(gadash.gviz.coreChartConfig)
+  .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.columnChart)
-  .setConfig(opt_config);
+  .setConfig(argsObj.userConfig);
+};
+
+
+/**
+ * Utility method to handle variable arguments on builder objects.
+ * @param {Object} baseConfig The default config object to which to
+ *     set various arguments.
+ * @param {Array.<Function>} argSetters The order of the arguments that
+ *     should be set. Each are specified as a function to update the
+ *     baseConfig object.
+ * @param {Array.<Object>} args The arguments array.
+ * @return {Object} Two configuration objects, the updated baseConfig
+ *     and any user supplied config object.
+ */
+gadash.gviz.getConfigFromArgs = function(baseConfig, argSetters, args) {
+  var userConfig;
+  for (var i = 0; i < args.length; ++i) {
+    var arg = args[i];
+    if (gadash.util.getType(arg) == 'object') {
+      // Do not allow additional parameters to be configured.
+      userConfig = arg;
+      break;
+
+    } else if (i < argSetters.length) {
+      // Pass object to be updated with the current argument to the function
+      // that handles updating.
+      argSetters[i](baseConfig, arg);
+    }
+  }
+
+  return {
+    'baseConfig': baseConfig,
+    'userConfig': userConfig
+  };
+};
+
+
+/**
+ * Utility helper method for certain var_args paramaters
+ * This extracts the divContainer, metrics, ids, config
+ * parameters from variable arguments. This exact sample pattern occurs on
+ * a couple of builders so it's abstracted here for simplicity. See
+ * getPieChart() for an example of how this works in a builder.
+ * @param {Array.<Object>} args The arguments passed to the var_args call.
+ * @return {Object} Two configuration objects, the updated baseConfig
+ *     and any user supplied config object.
+ */
+gadash.gviz.getCommonConfigFromArgs = function(args) {
+  var baseConfig = {
+    'divContainer': '',
+    'query': {
+      'ids': '',
+      'metrics': '',
+      'dimensions': 'ga:date'
+    }
+  };
+
+  var argSetters = [
+    function(obj, arg) {obj.divContainer = arg},
+    function(obj, arg) {obj.query.metrics = arg},
+    function(obj, arg) {obj.query.ids = arg}
+  ];
+
+  return gadash.gviz.getConfigFromArgs(baseConfig, argSetters, args);
 };
 
 

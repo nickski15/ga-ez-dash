@@ -20,6 +20,7 @@ Changelog
 - updated dashboard class to support controls.
 - updated dashboard.execute to pass data directly to added query objects
 - dashboards can be added to dashboards
+- all gadash.getCore* methods now support var_args. Config can be passed as any param.
 
 
 ### version 2.1.0
