@@ -2,7 +2,7 @@ ga-ez-dash
 ==========
 
 A forked version of the Google Analytics Easy Dashboard Library.
-I put this here to make it easier to play with the code, make fun demos, and track ideas.
+I put this here to make it easier to play with the code, make fun demos, and track ideas. Big changes are happening.
 
 The official source can be found here: http://goo.gl/mYI79
 
@@ -12,6 +12,15 @@ And I'm going to be adding demos on this page: http://nickski15.github.com/ga-ez
 
 Changelog
 ---------
+
+### version 2.1.1
+- added new control class to wrap UI elements with logic to return their
+  current values in query config objects
+- added gadash.getTextInputControl method to return a control from a text input
+- updated dashboard class to support controls.
+- updated dashboard.execute to pass data directly to added query objects
+- dashboards can be added to dashboards
+
 
 ### version 2.1.0
 - refactored all query objects into a single Query objects
