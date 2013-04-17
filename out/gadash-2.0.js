@@ -1544,13 +1544,13 @@ gadash.getCoreChart = function(opt_config) {
  *         not specify the entries.
  * @param {String} div - contains the <div> tag id value to indicate where
  *     the chart should appear on a webpage.
- * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {String} metrics - contains the type of metrics to be used in chart.
+ * @param {String} ids - contains the TABLE_ID to access analytics data.
  * @param {Object=} opt_config - An optional configuration object.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
+gadash.getCoreLineChart = function(div, metrics, ids, opt_config) {
   return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
@@ -1574,14 +1574,14 @@ gadash.getCoreLineChart = function(div, ids, metrics, opt_config) {
  *     for the start time / date range: 'last-n-days': 30.
  * @param {String} div Contains the <div> tag id value to indicate where
  *     the chart should appear on a webpage.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {String} metrics Contains the type of metrics to be used in chart.
  * @param {String} dimensions Contains the dimensions to be used in chart.
+ * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {Object=} opt_config An optional configuration object.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
+gadash.getCorePieChart = function(div, metrics, dimensions, ids, opt_config) {
   return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
@@ -1608,13 +1608,13 @@ gadash.getCorePieChart = function(div, ids, metrics, dimensions, opt_config) {
  *     for the start time / date range: 'last-n-days': 30.
  * @param {String} div Contains the <div> tag id value to indicate where
  *     the chart should appear on a webpage.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {String} metrics Contains the type of metrics to be used in chart.
+ * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {Object=} opt_config An optional configuration object.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
+gadash.getCoreBarChart = function(div, metrics, ids, opt_config) {
   return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
@@ -1639,13 +1639,13 @@ gadash.getCoreBarChart = function(div, ids, metrics, opt_config) {
  *     for the start time / date range: 'last-n-days': 30.
  * @param {String} div Contains the <div> tag id value to indicate where
  *     the chart should appear on a webpage.
- * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {String} metrics Contains the type of metrics to be used in chart.
+ * @param {String} ids Contains the TABLE_ID to access analytics data.
  * @param {Object=} opt_config An optional configuration object.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
-gadash.getCoreColumnChart = function(div, ids, metrics, opt_config) {
+gadash.getCoreColumnChart = function(div, metrics, ids, opt_config) {
   return new gadash.Query(gadash.gviz.coreChartConfig).setConfig({
     'divContainer': div,
     'query': {
