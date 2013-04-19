@@ -17,7 +17,7 @@
  * @author nickski15@gmail.com (Nick Mihailovski)
  *
  * @fileoverview
- * Provides the Control object. This can be used to simplify getting
+ * Provides the GaControl object. This can be used to simplify getting
  * config data from UI form controls.
  */
 
@@ -36,9 +36,9 @@ gadash.control = gadash.control || {};
  *       configuration object key.
  *     - getValue {Function} A function to return the value of the control.
  * @constructor.
- * @return {gadash.Control} this object. Useful for chaining.
+ * @return {gadash.GaControl} this object. Useful for chaining.
  */
-gadash.Control = function(settings) {
+gadash.GaControl = function(settings) {
   this.settings = settings;
 
   /**
@@ -75,7 +75,7 @@ gadash.Control = function(settings) {
  * settings.getValue function.
  * @return {String} The current value of this control.
  */
-gadash.Control.prototype.getValue = function() {
+gadash.GaControl.prototype.getValue = function() {
   var val = this.settings.getValue.apply(this);
   return val;
 };
@@ -87,7 +87,7 @@ gadash.Control.prototype.getValue = function() {
  * this.configObj and the value is derived from this.getValue.
  * @return {Object} The configuration object for this control.
  */
-gadash.Control.prototype.getConfig = function() {
+gadash.GaControl.prototype.getConfig = function() {
   this.configLastObj[this.configLastKey] = this.getValue();
   return this.configObj;
 };
@@ -98,10 +98,10 @@ gadash.Control.prototype.getConfig = function() {
  * @param {String} id The element ID of the text input.
  * @param {String} configObjKey The config object the value of this element
  *     maps to. This is defined in dot notation.
- * @return {gadash.Control} The new control object.
+ * @return {gadash.GaControl} The new control object.
  */
 gadash.getTextInputControl = function(id, configObjKey) {
-  return new gadash.Control({
+  return new gadash.GaControl({
     'id': id,
     'configObjKey': configObjKey,
     'getValue': gadash.control.getTextInputValue
@@ -112,7 +112,7 @@ gadash.getTextInputControl = function(id, configObjKey) {
 /**
  * Returns the value of the text element specified by this.id.
  * @return {string} The value of the text input element.
- * @this {gadash.Control}
+ * @this {gadash.GaControl}
  */
 gadash.control.getTextInputValue = function() {
   return document.getElementById(this.settings.id).value;

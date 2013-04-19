@@ -14,11 +14,11 @@ Changelog
 ---------
 
 ### version 2.1.1
-- added new control class to wrap UI elements with logic to return their
+- added new GaControl class to wrap UI elements with logic to return their
   current values in query config objects
 - added gadash.getTextInputControl method to return a control from a text input
-- updated component class to support controls.
-- updated component.execute to pass data directly to added query objects
+- updated GaComponent class to support controls.
+- updated GaComponent.execute to pass data directly to added query objects
 - components can be added to components
 - all gadash.getCore* methods now support var_args. Config can be passed as any param.
 - renamed:
