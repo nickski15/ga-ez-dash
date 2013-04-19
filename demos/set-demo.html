@@ -84,7 +84,7 @@
 
   // Configuration for data over time graph.
   var dataOverTimeConfig = {
-    'divContainer': 'dataOverTimeConfig',
+    'elementId': 'dataOverTimeConfig',
     'type': 'LineChart',
     'query': {
       'dimensions': 'ga:date',
@@ -101,13 +101,13 @@
 
   // Configuration for totals for each metric.
   var scoreCardConfig = {
-    'divContainer': 'scorecard',
+    'elementId': 'scorecard',
   };
 
 
   // Configuration for source medium table.
   var sourceMediumTableConfig = {
-    'divContainer': 'sourceMediumTableConfig',
+    'elementId': 'sourceMediumTableConfig',
     'query': {
       'dimensions': 'ga:source,ga:medium',
       'sort': '-ga:visitors',

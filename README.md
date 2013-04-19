@@ -21,6 +21,8 @@ Changelog
 - updated dashboard.execute to pass data directly to added query objects
 - dashboards can be added to dashboards
 - all gadash.getCore* methods now support var_args. Config can be passed as any param.
+- renamed:
+  - config.divContent -> config.elementId
 
 
 ### version 2.1.0

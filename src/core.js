@@ -116,10 +116,10 @@ gadash.onErrorDefault = function(error) {
   }
 
   // TODO(nm): Need better error handling. + html escape.
-  // Prints Query divContainer and message to error div.
+  // Prints Query elementId and message to error div.
   errorDiv.innerHTML += ' error: ' + error.code + ' ' +
       error.message + '<br />';
-  //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
+  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
   //    message + '<br />';
 };
 

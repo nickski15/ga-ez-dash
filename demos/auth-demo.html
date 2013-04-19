@@ -88,8 +88,8 @@ function handleAuthorized() {
  */
 function renderGraph() {
   gadash.getCoreLineChart('areaChart',
-      document.getElementById('tableId').value,
-      'ga:visits,ga:pageviews').execute();
+      'ga:visits,ga:pageviews',
+      document.getElementById('tableId').value).execute();
 }
 
 

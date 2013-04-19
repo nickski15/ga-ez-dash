@@ -719,10 +719,10 @@ gadash.onErrorDefault = function(error) {
   }
 
   // TODO(nm): Need better error handling. + html escape.
-  // Prints Query divContainer and message to error div.
+  // Prints Query elementId and message to error div.
   errorDiv.innerHTML += ' error: ' + error.code + ' ' +
       error.message + '<br />';
-  //errorDiv.innerHTML += this.config.divContainer + ' error: ' +
+  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
   //    message + '<br />';
 };
 
@@ -1304,7 +1304,7 @@ gadash.gviz = gadash.gviz || {};
  * @this {gadash.Query} The base Query object.
  */
 gadash.gviz.onRequestDefault = function() {
-  document.getElementById(this.config.divContainer).innerHTML = [
+  document.getElementById(this.config.elementId).innerHTML = [
     '<div class="ga-loader" ',
     'style="color:#777;font-size:18px;overflow:hidden">',
     '<img style="display:block;float:left" src="',
@@ -1320,7 +1320,7 @@ gadash.gviz.onRequestDefault = function() {
  * @this {gadash.Query} The base Query object.
  */
 gadash.gviz.onResponseDefault = function() {
-  document.getElementById(this.config.divContainer).innerHTML = '';
+  document.getElementById(this.config.elementId).innerHTML = '';
 
 };
 
@@ -1335,7 +1335,7 @@ gadash.gviz.onResponseDefault = function() {
  */
 gadash.gviz.onSuccessDefault = function(response) {
   var dataTable = gadash.gviz.getDataTable(response, this.config.type);
-  var chart = gadash.gviz.getChart(this.config.divContainer, this.config.type);
+  var chart = gadash.gviz.getChart(this.config.elementId, this.config.type);
   gadash.gviz.draw(chart, dataTable, this.config.chartOptions);
 };
 
@@ -1514,7 +1514,7 @@ gadash.getCoreChart = function(opt_config) {
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'last-n-days': 28
  * @param {Object} var_args The following arguments can be passed in order:
- *     divContainer, metrics, ids, config. The config object can be passed as
+ *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
@@ -1539,7 +1539,7 @@ gadash.getCoreLineChart = function(var_args) {
  * Following default values are used for this object:
  *     for the start time / date range: 'last-n-days': 28.
  * @param {Object} var_args The following arguments can be passed in order:
- *     divContainer, metrics, ids, config. The config object can be passed as
+ *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
@@ -1547,7 +1547,7 @@ gadash.getCoreLineChart = function(var_args) {
 gadash.getCorePieChart = function(var_args) {
   // Supported argumentsorder : div, metrics, dimensions, ids, config
   var baseConfig = {
-    'divContainer': '',
+    'elementId': '',
     'query': {
       'ids': '',
       'metrics': '',
@@ -1558,7 +1558,7 @@ gadash.getCorePieChart = function(var_args) {
   };
 
   var argSetters = [
-    function(obj, arg) {obj.divContainer = arg},
+    function(obj, arg) {obj.elementId = arg},
     function(obj, arg) {
       obj.query.metrics = arg;
       obj.query.sort = '-' + arg;
@@ -1588,7 +1588,7 @@ gadash.getCorePieChart = function(var_args) {
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'last-n-days': 28.
  * @param {Object} var_args The following arguments can be passed in order:
- *     divContainer, metrics, ids, config. The config object can be passed as
+ *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
@@ -1614,7 +1614,7 @@ gadash.getCoreBarChart = function(var_args) {
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'last-n-days': 28.
  * @param {Object} var_args The following arguments can be passed in order:
- *     divContainer, metrics, ids, config. The config object can be passed as
+ *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.Query} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
@@ -1667,7 +1667,7 @@ gadash.gviz.getConfigFromArgs = function(baseConfig, argSetters, args) {
 
 /**
  * Utility helper method for certain var_args paramaters
- * This extracts the divContainer, metrics, ids, config
+ * This extracts the elementId, metrics, ids, config
  * parameters from variable arguments. This exact sample pattern occurs on
  * a couple of builders so it's abstracted here for simplicity. See
  * getPieChart() for an example of how this works in a builder.
@@ -1677,7 +1677,7 @@ gadash.gviz.getConfigFromArgs = function(baseConfig, argSetters, args) {
  */
 gadash.gviz.getCommonConfigFromArgs = function(args) {
   var baseConfig = {
-    'divContainer': '',
+    'elementId': '',
     'query': {
       'ids': '',
       'metrics': '',
@@ -1686,7 +1686,7 @@ gadash.gviz.getCommonConfigFromArgs = function(args) {
   };
 
   var argSetters = [
-    function(obj, arg) {obj.divContainer = arg},
+    function(obj, arg) {obj.elementId = arg},
     function(obj, arg) {obj.query.metrics = arg},
     function(obj, arg) {obj.query.ids = arg}
   ];
