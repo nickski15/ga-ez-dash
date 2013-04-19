@@ -43,7 +43,7 @@ gadash.gviz = gadash.gviz || {};
 /**
  * Adds a loading message to the div in which the chart is executed.
  * Then queries the Core Reporting API.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onRequestDefault = function() {
   document.getElementById(this.config.elementId).innerHTML = [
@@ -59,7 +59,7 @@ gadash.gviz.onRequestDefault = function() {
 
 /**
  * Removes all content from the div in which the chart is executed.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onResponseDefault = function() {
   document.getElementById(this.config.elementId).innerHTML = '';
@@ -73,7 +73,7 @@ gadash.gviz.onResponseDefault = function() {
  * is returned. The two are then combined to draw a query that is populated
  * with the GA data.
  * @param {Object} response A Google Analytics API JSON response.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onSuccessDefault = function(response) {
   var dataTable = gadash.gviz.getDataTable(response, this.config.type);
@@ -223,7 +223,7 @@ gadash.gviz.createDateFormater = function(dataTable) {
 
 /**
  * The standard controller configuration for Core Reporting Charts.
- * This should be passed to the constructor of all Query objects
+ * This should be passed to the constructor of all GaQuery objects
  * for gviz Core Reporting API Charts.
  * @type {Object}
  */
@@ -238,18 +238,18 @@ gadash.gviz.coreChartConfig = {
 /**
  * Base Chart for the Core Reporting API.
  * @param {opt_config=} opt_config An optional configuration object.
- * @return {gadash.Query} The newly created Query object.
+ * @return {gadash.GaQuery} The newly created GaQuery object.
  */
 gadash.getCoreChart = function(opt_config) {
-  return new gadash.Query()
+  return new gadash.GaQuery()
       .setConfig(gadash.gviz.coreChartConfig)
       .setConfig(opt_config);
 };
 
 
 /**
- * Line Chart Wrapper. Creates a Query object and sets default settings specific
- * to line charts.
+ * Line Chart Wrapper. Creates a GaQuery object and sets default settings
+ * specific to line charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
@@ -258,14 +258,14 @@ gadash.getCoreChart = function(opt_config) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} this Returns a reference to the newly instantiated
+ * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreLineChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.areaChart)
@@ -274,7 +274,7 @@ gadash.getCoreLineChart = function(var_args) {
 
 
 /**
- * Pie Chart Wrapper. Creates a Query object and sets default settings
+ * Pie Chart Wrapper. Creates a GaQuery object and sets default settings
  * specific to pie charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -283,7 +283,7 @@ gadash.getCoreLineChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} this Returns a reference to the newly instantiated
+ * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCorePieChart = function(var_args) {
@@ -313,7 +313,7 @@ gadash.getCorePieChart = function(var_args) {
       arguments);
 
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.pieChart)
@@ -322,7 +322,7 @@ gadash.getCorePieChart = function(var_args) {
 
 
 /**
- * Bar Chart Wrapper. Creates a Query object and sets default settings
+ * Bar Chart Wrapper. Creates a GaQuery object and sets default settings
  * specific to line charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -332,14 +332,14 @@ gadash.getCorePieChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} a reference to the newly instantiated
+ * @return {gadash.GaQuery} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreBarChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.barChart)
@@ -348,7 +348,7 @@ gadash.getCoreBarChart = function(var_args) {
 
 
 /**
- * Bar Column Wrapper. Creates a Query object and sets default settings
+ * Bar Column Wrapper. Creates a GaQuery object and sets default settings
  * specific to bar charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -358,14 +358,14 @@ gadash.getCoreBarChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} a reference to the newly instantiated
+ * @return {gadash.GaQuery} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreColumnChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.columnChart)

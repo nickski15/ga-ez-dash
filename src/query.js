@@ -20,20 +20,20 @@
  * @author ooahmad@gmail.com (Osama Ahmad)
  *
  * @fileoverview
- * Provides the Abstract Query class to query the Google Analytics APIs. This
- * class defines all the interfaces and logic flow of this object. To make
- * this class functional, various methods need to be defined.
+ * Provides the Abstract GaQuery class to query the Google Analytics APIs.
+ * This class defines all the interfaces and logic flow of this object.
+ * To make this class functional, various methods need to be defined.
  */
 
 
 
 /**
- * A Core Query object is the base object to perform a Core Reporting API query.
- * It accepts an optional configuration object that contains an
+ * A Core GaQuery object is the base object to perform a Core Reporting API
+ * query. It accepts an optional configuration object that contains an
  * object defining the query. Also changes start and end date of
  * the query, if last-n-days is set in the config.
  * Usage:
- * var cq = new gadash.Query({
+ * var gqQuery = new gadash.GaQuery({
  *   query: {
  *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
  *     'start-date': '2012-01-01',
@@ -53,7 +53,7 @@
  *     Chart instance. Useful for chaining methods together.
  * @constructor
  */
-gadash.Query = function(opt_config) {
+gadash.GaQuery = function(opt_config) {
   this.config = {};
   this.setConfig(opt_config);
   return this;
@@ -61,14 +61,14 @@ gadash.Query = function(opt_config) {
 
 
 /**
- * Extends the values in the Query's config object with the keys in
- * the config parameters. If a key in config already exists in the Query,
+ * Extends the values in the GaQuery's config object with the keys in
+ * the config parameters. If a key in config already exists in the GaQuery,
  * and the value is not an object, the new value overwrites the old.
  * @param {Object} config The config object to set inside this object.
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Query.prototype.setConfig = function(config) {
+gadash.GaQuery.prototype.setConfig = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -76,15 +76,15 @@ gadash.Query.prototype.setConfig = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * Query can be executed right away. Otherwise, other operations are queued,
+ * GaQuery can be executed right away. Otherwise, other operations are queued,
  * so the execute command is pushed to the command queue to be executed in
  * the same order as originally called.
  * @param {Object=} opt_config An optional query configuration object.
- * @this Points to the current Query instance.
- * @return {Object} The current instance of this Query object. Useful for
+ * @this Points to the current GaQuery instance.
+ * @return {Object} The current instance of this GaQuery object. Useful for
  *     chaining methods.
  */
-gadash.Query.prototype.execute = function(opt_config) {
+gadash.GaQuery.prototype.execute = function(opt_config) {
   if (opt_config) this.setConfig(opt_config);
 
   // If the client library has loaded.
@@ -107,7 +107,7 @@ gadash.Query.prototype.execute = function(opt_config) {
  * maintained within the callback.
  * @private.
  */
-gadash.Query.prototype.executeFunction_ = function() {
+gadash.GaQuery.prototype.executeFunction_ = function() {
   this.executeHandlers_('onRequest', 'onRequestDefault');
 };
 
@@ -125,10 +125,10 @@ gadash.Query.prototype.executeFunction_ = function() {
  * the onSuccess function does not return false, the onSuccessDefault
  * function is called.
  * Both the onSuccess and onError functions are executed in the context
- * of the Query object.
+ * of the GaQuery object.
  * @param {Object} response - Google Analytics API JSON response.
  */
-gadash.Query.prototype.callback = function(response) {
+gadash.GaQuery.prototype.callback = function(response) {
 
   this.executeHandlers_('onResponse', 'onResponseDefault');
 
@@ -157,7 +157,7 @@ gadash.Query.prototype.callback = function(response) {
  * @param {Object=} opt_args The parameter to pass to both functions above.
  * @private
  */
-gadash.Query.prototype.executeHandlers_ = function(userFunction,
+gadash.GaQuery.prototype.executeHandlers_ = function(userFunction,
     defaultFunction, opt_args) {
 
   var userFunc = this.config[userFunction];

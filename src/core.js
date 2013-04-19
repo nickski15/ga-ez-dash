@@ -49,11 +49,11 @@ gadash.core = gadash.core || {};
  * }
  *
  * @param {Object=} opt_config An optional query configuration object.
- * @return {gadash.Query} A Query object configured to query the
+ * @return {gadash.GaQuery} A GaQuery object configured to query the
  *     Core Reporting API.
  */
 gadash.getCoreQuery = function(opt_config) {
-  return new gadash.Query({
+  return new gadash.GaQuery({
     'onRequestDefault': gadash.core.onRequestDefault,
     'onErrorDefault': gadash.onErrorDefault
   }).setConfig(opt_config);
@@ -65,7 +65,7 @@ gadash.getCoreQuery = function(opt_config) {
  * dates for the configuration object. It then creates a query based
  * on the query parameter in the config object. Finally it executes the
  * query and sets the callback to this.callback.
- * @this {gadash.Query} The Query object.
+ * @this {gadash.GaQuery} The GaQuery object.
  */
 gadash.core.onRequestDefault = function() {
   gadash.core.setDefaultDates(this.config);
@@ -80,7 +80,7 @@ gadash.core.onRequestDefault = function() {
  * If neither start not end date is set, a default of the last
  * 28 days is used.
  * @param {Object} config A config object.
- * @this Points to the Query object.
+ * @this Points to the GaQuery object.
  */
 gadash.core.setDefaultDates = function(config) {
   if (config['last-n-days']) {
@@ -116,7 +116,7 @@ gadash.onErrorDefault = function(error) {
   }
 
   // TODO(nm): Need better error handling. + html escape.
-  // Prints Query elementId and message to error div.
+  // Prints GaQuery elementId and message to error div.
   errorDiv.innerHTML += ' error: ' + error.code + ' ' +
       error.message + '<br />';
   //errorDiv.innerHTML += this.config.elementId + ' error: ' +

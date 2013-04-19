@@ -19,8 +19,8 @@
  *
  * @fileoverview
  * Provides the GaComponent object that allows you manage
- * multiple Control and/or Query objects as one. e.g. you can
- * create 5 Query objects, add them to a GaComponent object and manage
+ * multiple Control and/or GaQuery objects as one. e.g. you can
+ * create 5 GaQuery objects, add them to a GaComponent object and manage
  * all 5 queries with a single command. GaComponents also support
  * embedding other dashboards.
  */
@@ -29,7 +29,7 @@
 /**
  * Returns a new instance of a GaComponent object.
  * @param {Object=} opt_objects Either a single or array of objects.
- *     Typically either Query or Control objects.
+ *     Typically either GaQuery or Control objects.
  * @return {gadash.GaComponent} The new GaComponent instance.
  */
 gadash.getGaComponent = function(opt_objects) {
@@ -50,13 +50,13 @@ gadash.GaComponent = function() {
 
 
 /**
- * Adds a new Control or Query to the dashboard. Can be a single object,
+ * Adds a new Control or GaQuery to the dashboard. Can be a single object,
  * or an array of objects.
  * For example, the following are valid:
  *   dash.add(chart1);
  *   dash.add([chart1, chart2, chart3])
  *
- * @param {object|array} object An optional list of gadash.Query or
+ * @param {object|array} object An optional list of gadash.GaQuery or
  *     gadash.Control objects.
  * @return {gadash.GaComponent} this object. Useful for chaining methods.
  */

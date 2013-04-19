@@ -26,10 +26,10 @@ Changelog
 
 
 ### version 2.1.0
-- refactored all query objects into a single Query objects
+- refactored all query objects into a single GaQuery objects
 - modified method name:
-  - Query.set() is now Query.setConfig()
-  - Query.render() is now Query.execute()
+  - GaQuery.set() is now GaQuery.setConfig()
+  - GaQuery.render() is now GaQuery.execute()
 - added methods to get various pre configured objects:
   - gadash.getCoreQuery()
   - gadash.getCoreLineChart()

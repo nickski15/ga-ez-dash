@@ -448,20 +448,20 @@ gadash.control.getConfigObjDetails = function(dotNotation) {
  * @author ooahmad@gmail.com (Osama Ahmad)
  *
  * @fileoverview
- * Provides the Abstract Query class to query the Google Analytics APIs. This
- * class defines all the interfaces and logic flow of this object. To make
- * this class functional, various methods need to be defined.
+ * Provides the Abstract GaQuery class to query the Google Analytics APIs.
+ * This class defines all the interfaces and logic flow of this object.
+ * To make this class functional, various methods need to be defined.
  */
 
 
 
 /**
- * A Core Query object is the base object to perform a Core Reporting API query.
- * It accepts an optional configuration object that contains an
+ * A Core GaQuery object is the base object to perform a Core Reporting API
+ * query. It accepts an optional configuration object that contains an
  * object defining the query. Also changes start and end date of
  * the query, if last-n-days is set in the config.
  * Usage:
- * var cq = new gadash.Query({
+ * var gqQuery = new gadash.GaQuery({
  *   query: {
  *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
  *     'start-date': '2012-01-01',
@@ -481,7 +481,7 @@ gadash.control.getConfigObjDetails = function(dotNotation) {
  *     Chart instance. Useful for chaining methods together.
  * @constructor
  */
-gadash.Query = function(opt_config) {
+gadash.GaQuery = function(opt_config) {
   this.config = {};
   this.setConfig(opt_config);
   return this;
@@ -489,14 +489,14 @@ gadash.Query = function(opt_config) {
 
 
 /**
- * Extends the values in the Query's config object with the keys in
- * the config parameters. If a key in config already exists in the Query,
+ * Extends the values in the GaQuery's config object with the keys in
+ * the config parameters. If a key in config already exists in the GaQuery,
  * and the value is not an object, the new value overwrites the old.
  * @param {Object} config The config object to set inside this object.
  * @return {Object} The current instance of the Chart object. Useful
  *     for chaining methods.
  */
-gadash.Query.prototype.setConfig = function(config) {
+gadash.GaQuery.prototype.setConfig = function(config) {
   gadash.util.extend(config, this.config);
   return this;
 };
@@ -504,15 +504,15 @@ gadash.Query.prototype.setConfig = function(config) {
 
 /**
  * First checks to see if the GA library is loaded. If it is then the
- * Query can be executed right away. Otherwise, other operations are queued,
+ * GaQuery can be executed right away. Otherwise, other operations are queued,
  * so the execute command is pushed to the command queue to be executed in
  * the same order as originally called.
  * @param {Object=} opt_config An optional query configuration object.
- * @this Points to the current Query instance.
- * @return {Object} The current instance of this Query object. Useful for
+ * @this Points to the current GaQuery instance.
+ * @return {Object} The current instance of this GaQuery object. Useful for
  *     chaining methods.
  */
-gadash.Query.prototype.execute = function(opt_config) {
+gadash.GaQuery.prototype.execute = function(opt_config) {
   if (opt_config) this.setConfig(opt_config);
 
   // If the client library has loaded.
@@ -535,7 +535,7 @@ gadash.Query.prototype.execute = function(opt_config) {
  * maintained within the callback.
  * @private.
  */
-gadash.Query.prototype.executeFunction_ = function() {
+gadash.GaQuery.prototype.executeFunction_ = function() {
   this.executeHandlers_('onRequest', 'onRequestDefault');
 };
 
@@ -553,10 +553,10 @@ gadash.Query.prototype.executeFunction_ = function() {
  * the onSuccess function does not return false, the onSuccessDefault
  * function is called.
  * Both the onSuccess and onError functions are executed in the context
- * of the Query object.
+ * of the GaQuery object.
  * @param {Object} response - Google Analytics API JSON response.
  */
-gadash.Query.prototype.callback = function(response) {
+gadash.GaQuery.prototype.callback = function(response) {
 
   this.executeHandlers_('onResponse', 'onResponseDefault');
 
@@ -585,7 +585,7 @@ gadash.Query.prototype.callback = function(response) {
  * @param {Object=} opt_args The parameter to pass to both functions above.
  * @private
  */
-gadash.Query.prototype.executeHandlers_ = function(userFunction,
+gadash.GaQuery.prototype.executeHandlers_ = function(userFunction,
     defaultFunction, opt_args) {
 
   var userFunc = this.config[userFunction];
@@ -652,11 +652,11 @@ gadash.core = gadash.core || {};
  * }
  *
  * @param {Object=} opt_config An optional query configuration object.
- * @return {gadash.Query} A Query object configured to query the
+ * @return {gadash.GaQuery} A GaQuery object configured to query the
  *     Core Reporting API.
  */
 gadash.getCoreQuery = function(opt_config) {
-  return new gadash.Query({
+  return new gadash.GaQuery({
     'onRequestDefault': gadash.core.onRequestDefault,
     'onErrorDefault': gadash.onErrorDefault
   }).setConfig(opt_config);
@@ -668,7 +668,7 @@ gadash.getCoreQuery = function(opt_config) {
  * dates for the configuration object. It then creates a query based
  * on the query parameter in the config object. Finally it executes the
  * query and sets the callback to this.callback.
- * @this {gadash.Query} The Query object.
+ * @this {gadash.GaQuery} The GaQuery object.
  */
 gadash.core.onRequestDefault = function() {
   gadash.core.setDefaultDates(this.config);
@@ -683,7 +683,7 @@ gadash.core.onRequestDefault = function() {
  * If neither start not end date is set, a default of the last
  * 28 days is used.
  * @param {Object} config A config object.
- * @this Points to the Query object.
+ * @this Points to the GaQuery object.
  */
 gadash.core.setDefaultDates = function(config) {
   if (config['last-n-days']) {
@@ -719,7 +719,7 @@ gadash.onErrorDefault = function(error) {
   }
 
   // TODO(nm): Need better error handling. + html escape.
-  // Prints Query elementId and message to error div.
+  // Prints GaQuery elementId and message to error div.
   errorDiv.innerHTML += ' error: ' + error.code + ' ' +
       error.message + '<br />';
   //errorDiv.innerHTML += this.config.elementId + ' error: ' +
@@ -1301,7 +1301,7 @@ gadash.gviz = gadash.gviz || {};
 /**
  * Adds a loading message to the div in which the chart is executed.
  * Then queries the Core Reporting API.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onRequestDefault = function() {
   document.getElementById(this.config.elementId).innerHTML = [
@@ -1317,7 +1317,7 @@ gadash.gviz.onRequestDefault = function() {
 
 /**
  * Removes all content from the div in which the chart is executed.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onResponseDefault = function() {
   document.getElementById(this.config.elementId).innerHTML = '';
@@ -1331,7 +1331,7 @@ gadash.gviz.onResponseDefault = function() {
  * is returned. The two are then combined to draw a query that is populated
  * with the GA data.
  * @param {Object} response A Google Analytics API JSON response.
- * @this {gadash.Query} The base Query object.
+ * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onSuccessDefault = function(response) {
   var dataTable = gadash.gviz.getDataTable(response, this.config.type);
@@ -1481,7 +1481,7 @@ gadash.gviz.createDateFormater = function(dataTable) {
 
 /**
  * The standard controller configuration for Core Reporting Charts.
- * This should be passed to the constructor of all Query objects
+ * This should be passed to the constructor of all GaQuery objects
  * for gviz Core Reporting API Charts.
  * @type {Object}
  */
@@ -1496,18 +1496,18 @@ gadash.gviz.coreChartConfig = {
 /**
  * Base Chart for the Core Reporting API.
  * @param {opt_config=} opt_config An optional configuration object.
- * @return {gadash.Query} The newly created Query object.
+ * @return {gadash.GaQuery} The newly created GaQuery object.
  */
 gadash.getCoreChart = function(opt_config) {
-  return new gadash.Query()
+  return new gadash.GaQuery()
       .setConfig(gadash.gviz.coreChartConfig)
       .setConfig(opt_config);
 };
 
 
 /**
- * Line Chart Wrapper. Creates a Query object and sets default settings specific
- * to line charts.
+ * Line Chart Wrapper. Creates a GaQuery object and sets default settings
+ * specific to line charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
@@ -1516,14 +1516,14 @@ gadash.getCoreChart = function(opt_config) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} this Returns a reference to the newly instantiated
+ * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreLineChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.areaChart)
@@ -1532,7 +1532,7 @@ gadash.getCoreLineChart = function(var_args) {
 
 
 /**
- * Pie Chart Wrapper. Creates a Query object and sets default settings
+ * Pie Chart Wrapper. Creates a GaQuery object and sets default settings
  * specific to pie charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -1541,7 +1541,7 @@ gadash.getCoreLineChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} this Returns a reference to the newly instantiated
+ * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCorePieChart = function(var_args) {
@@ -1571,7 +1571,7 @@ gadash.getCorePieChart = function(var_args) {
       arguments);
 
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.pieChart)
@@ -1580,7 +1580,7 @@ gadash.getCorePieChart = function(var_args) {
 
 
 /**
- * Bar Chart Wrapper. Creates a Query object and sets default settings
+ * Bar Chart Wrapper. Creates a GaQuery object and sets default settings
  * specific to line charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -1590,14 +1590,14 @@ gadash.getCorePieChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} a reference to the newly instantiated
+ * @return {gadash.GaQuery} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreBarChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.barChart)
@@ -1606,7 +1606,7 @@ gadash.getCoreBarChart = function(var_args) {
 
 
 /**
- * Bar Column Wrapper. Creates a Query object and sets default settings
+ * Bar Column Wrapper. Creates a GaQuery object and sets default settings
  * specific to bar charts.
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
@@ -1616,14 +1616,14 @@ gadash.getCoreBarChart = function(var_args) {
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
- * @return {gadash.Query} a reference to the newly instantiated
+ * @return {gadash.GaQuery} a reference to the newly instantiated
  *     instance. Useful for chaining methods together.
  */
 gadash.getCoreColumnChart = function(var_args) {
   // Supported arguments order: div, metrics, ids, config
   var argsObj = gadash.gviz.getCommonConfigFromArgs(arguments);
 
-  return new gadash.Query(gadash.gviz.coreChartConfig)
+  return new gadash.GaQuery(gadash.gviz.coreChartConfig)
   .setConfig(argsObj.baseConfig)
   .setConfig(gadash.gviz.defaultGvizChartOptions)
   .setConfig(gadash.gviz.columnChart)
@@ -1880,8 +1880,8 @@ gadash.gviz.columnChart = {
  *
  * @fileoverview
  * Provides the GaComponent object that allows you manage
- * multiple Control and/or Query objects as one. e.g. you can
- * create 5 Query objects, add them to a GaComponent object and manage
+ * multiple Control and/or GaQuery objects as one. e.g. you can
+ * create 5 GaQuery objects, add them to a GaComponent object and manage
  * all 5 queries with a single command. GaComponents also support
  * embedding other dashboards.
  */
@@ -1890,7 +1890,7 @@ gadash.gviz.columnChart = {
 /**
  * Returns a new instance of a GaComponent object.
  * @param {Object=} opt_objects Either a single or array of objects.
- *     Typically either Query or Control objects.
+ *     Typically either GaQuery or Control objects.
  * @return {gadash.GaComponent} The new GaComponent instance.
  */
 gadash.getGaComponent = function(opt_objects) {
@@ -1911,13 +1911,13 @@ gadash.GaComponent = function() {
 
 
 /**
- * Adds a new Control or Query to the dashboard. Can be a single object,
+ * Adds a new Control or GaQuery to the dashboard. Can be a single object,
  * or an array of objects.
  * For example, the following are valid:
  *   dash.add(chart1);
  *   dash.add([chart1, chart2, chart3])
  *
- * @param {object|array} object An optional list of gadash.Query or
+ * @param {object|array} object An optional list of gadash.GaQuery or
  *     gadash.Control objects.
  * @return {gadash.GaComponent} this object. Useful for chaining methods.
  */
