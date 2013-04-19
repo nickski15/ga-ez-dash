@@ -91,7 +91,7 @@ gadash.init({
 
 
 // Create some text input controls.
-var dash = gadash.getDashboard([
+var comp = gadash.getGaComponent([
   gadash.getTextInputControl('tableId', 'query.ids'),
   gadash.getTextInputControl('startDate', 'query.start-date'),
   gadash.getTextInputControl('endDate', 'query.end-date'),
@@ -106,7 +106,7 @@ var dash = gadash.getDashboard([
 
 
 function displayQuery() {
-  var config = dash.getConfig();
+  var config = comp.getConfig();
 
   var output = [];
   if (config.query) {

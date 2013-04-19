@@ -17,9 +17,9 @@ Changelog
 - added new control class to wrap UI elements with logic to return their
   current values in query config objects
 - added gadash.getTextInputControl method to return a control from a text input
-- updated dashboard class to support controls.
-- updated dashboard.execute to pass data directly to added query objects
-- dashboards can be added to dashboards
+- updated component class to support controls.
+- updated component.execute to pass data directly to added query objects
+- components can be added to components
 - all gadash.getCore* methods now support var_args. Config can be passed as any param.
 - renamed:
   - config.divContent -> config.elementId
@@ -37,7 +37,7 @@ Changelog
   - gadash.getCorePieChart()
   - gadash.getCoreColumnChart()
 - render method accepts an optional config object
-- added a new Dashboard class. This has both setConfig and execute methods,
+- added a new GaComponent class. This has both setConfig and execute methods,
   to simplify managing multiple query objects as a single object.
 
 

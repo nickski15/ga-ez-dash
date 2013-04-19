@@ -18,32 +18,32 @@
  * @author nickski15@gmail.com (Nick Mihailovski)
  *
  * @fileoverview
- * Provides the Dashboard object that allows you manage
+ * Provides the GaComponent object that allows you manage
  * multiple Control and/or Query objects as one. e.g. you can
- * create 5 Query objects, add them to a Dashboard object and manage
- * all 5 queries with a single command. Dashboards also support
+ * create 5 Query objects, add them to a GaComponent object and manage
+ * all 5 queries with a single command. GaComponents also support
  * embedding other dashboards.
  */
 
 
 /**
- * Returns a new instance of a Dashboard object.
+ * Returns a new instance of a GaComponent object.
  * @param {Object=} opt_objects Either a single or array of objects.
  *     Typically either Query or Control objects.
- * @return {gadash.Dashboard} The new Dashboard instance.
+ * @return {gadash.GaComponent} The new GaComponent instance.
  */
-gadash.getDashboard = function(opt_objects) {
-  return new gadash.Dashboard().add(opt_objects);
+gadash.getGaComponent = function(opt_objects) {
+  return new gadash.GaComponent().add(opt_objects);
 };
 
 
 
 /**
- * Creates a new Dashboard object for managing multiple queries.
- * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ * Creates a new GaComponent object for managing multiple queries.
+ * @return {gadash.GaComponent} this object. Useful for chaining methods.
  * @constructor.
  */
-gadash.Dashboard = function() {
+gadash.GaComponent = function() {
   this.objects_ = [];
   return this;
 };
@@ -58,9 +58,9 @@ gadash.Dashboard = function() {
  *
  * @param {object|array} object An optional list of gadash.Query or
  *     gadash.Control objects.
- * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ * @return {gadash.GaComponent} this object. Useful for chaining methods.
  */
-gadash.Dashboard.prototype.add = function(object) {
+gadash.GaComponent.prototype.add = function(object) {
 
   if (gadash.util.getType(object) == 'array') {
     for (var i = 0, obj; obj = object[i]; ++i) {
@@ -80,7 +80,7 @@ gadash.Dashboard.prototype.add = function(object) {
  * dashboard objects.
  * @return {Object} A single config object for all controls.
  */
-gadash.Dashboard.prototype.getConfig = function() {
+gadash.GaComponent.prototype.getConfig = function() {
   var config = {};
   for (var i = 0, object; object = this.objects_[i]; ++i) {
     if (object.getConfig) {
@@ -97,9 +97,9 @@ gadash.Dashboard.prototype.getConfig = function() {
  * query or dashboard objects.
  * @param {Object} config The configuration object to set on all the
  *     objects.
- * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ * @return {gadash.GaComponent} this object. Useful for chaining methods.
  */
-gadash.Dashboard.prototype.setConfig = function(config) {
+gadash.GaComponent.prototype.setConfig = function(config) {
   for (var i = 0, object; object = this.objects_[i]; ++i) {
     if (object.setConfig) {
       object.setConfig(config);
@@ -116,9 +116,9 @@ gadash.Dashboard.prototype.setConfig = function(config) {
  * the opt_config parameter. Finally each object is executed.
  * @param {Object=} opt_config An optional configuration object to set
  *     on all the charts before rendering them.
- * @return {gadash.Dashboard} this object. Useful for chaining methods.
+ * @return {gadash.GaComponent} this object. Useful for chaining methods.
  */
-gadash.Dashboard.prototype.execute = function(opt_config) {
+gadash.GaComponent.prototype.execute = function(opt_config) {
   var config = this.getConfig();
   if (opt_config) {
     gadash.util.extend(opt_config, config);
