@@ -437,6 +437,20 @@ gadash.getIncrementalCallback = function(numberOfCallbacks, finalCallback) {
 
 
 /**
+ * Returns an element either by ID or reference.
+ * @param {object|String} elementId Either the reference to the element or
+ *     if it's a string, it's ID.
+ * @return {object} The referenced element.
+ */
+gadash.util.getElement = function(elementId) {
+  if (gadash.util.getType(elementId) == 'string') {
+    return document.getElementById(elementId);
+  }
+  return elementId;
+};
+
+
+/**
  * Returns an data uri of an ajax preloader image.
  * @return {String}  data URI to be used in an image tag.
  */

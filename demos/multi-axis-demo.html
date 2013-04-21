@@ -41,10 +41,10 @@
   // Configuration for data over time graph.
   dataOverTime.setConfig({
     'elementId': 'dataOverTimeConfig',
-    'last-n-days': 30,
     'type': 'LineChart',
     'query': {
-      'metrics': 'ga:timeOnSite, ga:pageviews',
+      'lastNdays': 30,
+      'metrics': 'ga:timeOnSite,ga:pageviews',
       'dimensions': 'ga:date',
       'sort': 'ga:date'
     },

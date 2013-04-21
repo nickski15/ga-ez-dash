@@ -31,13 +31,13 @@
  * A Core GaQuery object is the base object to perform a Core Reporting API
  * query. It accepts an optional configuration object that contains an
  * object defining the query. Also changes start and end date of
- * the query, if last-n-days is set in the config.
+ * the query, if lastNdays is set in the config.
  * Usage:
  * var gqQuery = new gadash.GaQuery({
  *   query: {
  *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
- *     'start-date': '2012-01-01',
- *     'end-date': '2012-02-01',
+ *     'startDate': '2012-01-01',
+ *     'endDate': '2012-02-01',
  *     'metrics': 'ga:visits'
  *   },
  *   onSuccess: function(response) {

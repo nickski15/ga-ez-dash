@@ -244,6 +244,7 @@ gadash.auth.loadUserNameHander_ = function(response) {
     gadash.auth.onAuthorizedDefault();
   }
 
+  // Move to pub sub -or- custom event.
   gadash.isLoaded = true;
   gadash.auth.executeCommandQueue_();
 };
@@ -459,13 +460,13 @@ gadash.control.getConfigObjDetails = function(dotNotation) {
  * A Core GaQuery object is the base object to perform a Core Reporting API
  * query. It accepts an optional configuration object that contains an
  * object defining the query. Also changes start and end date of
- * the query, if last-n-days is set in the config.
+ * the query, if lastNdays is set in the config.
  * Usage:
  * var gqQuery = new gadash.GaQuery({
  *   query: {
  *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
- *     'start-date': '2012-01-01',
- *     'end-date': '2012-02-01',
+ *     'startDate': '2012-01-01',
+ *     'endDate': '2012-02-01',
  *     'metrics': 'ga:visits'
  *   },
  *   onSuccess: function(response) {
@@ -639,7 +640,7 @@ gadash.core = gadash.core || {};
  * the API. Usage:
  *
  * gadash.getCoreQuery({
- *   'last-n-days': 28,
+ *   'lastNdays': 28,
  *   'query': {
  *     'ids': 'ga:1174',
  *     'metrics': 'ga:pageviews'
@@ -671,30 +672,97 @@ gadash.getCoreQuery = function(opt_config) {
  * @this {gadash.GaQuery} The GaQuery object.
  */
 gadash.core.onRequestDefault = function() {
-  gadash.core.setDefaultDates(this.config);
-  var request = gapi.client.analytics.data.ga.get(this.config.query);
+  this.config.actualQuery = gadash.core.getCoreQueryObj(this.config);
+  var request = gapi.client.analytics.data.ga.get(this.config.actualQuery);
   request.execute(gadash.util.bindMethod(this, this.callback));
 };
 
 
 /**
- * Handles setting default and last-n-days dates.
- * If last-n-days has been set, Updates the start and end date.
+ * Returns the actual query values issued to the Google Analytics Core
+ * reporting API as an object. This figures out the default dates.
+ * It also removes any unused keys. It also properly maps camel
+ * cased values into their hyphenated equivalents.
+ * @param {object} config The configuration object.
+ * @return {Object} A new object that for the actual query parameters that
+ *     should be sent to the GA API.
+ */
+gadash.core.getCoreQueryObj = function(config) {
+  var actualQuery = {};
+
+  if (config.query.ids) {
+    actualQuery.ids = config.query.ids;
+  }
+
+  if (config.query.metrics) {
+    actualQuery.metrics = config.query.metrics.split(' ').join(',');
+  }
+
+  if (config.query.dimensions) {
+    actualQuery.dimensions = config.query.dimensions.split(' ').join(',');
+  }
+
+  if (config.query.filters) {
+    actualQuery.filters = config.query.filters;
+  }
+
+  if (config.query.segment) {
+    actualQuery.segment = config.query.segment;
+  }
+
+  if (config.query.sort) {
+    actualQuery.sort = config.query.sort.split(' ').join(',');
+  }
+
+  if (config.query.startIndex) {
+    actualQuery['start-index'] = config.query.startIndex;
+  }
+  if (config.query.maxResults) {
+    actualQuery['max-results'] = config.query.maxResults;
+  }
+
+  /* Handles setting default and lastNdays dates.
+   * If lastNdays has been set, Updates the start and end date.
+   * If neither start not end date is set, a default of the last
+   * 28 days is used. Otherwise the original dates are used.
+   */
+  if (config.query.lastNdays) {
+    actualQuery['end-date'] = gadash.util.lastNdays(0);
+    actualQuery['start-date'] = gadash.util.lastNdays(config.query.lastNdays);
+
+  } else if (!config.query.startDate || !config.query.endDate) {
+    // Provide a default date range of last 28 days.
+    actualQuery['end-date'] = gadash.util.lastNdays(0);
+    actualQuery['start-date'] = gadash.util.lastNdays(28);
+
+  } else {
+    // Both exist. Move the dates over.
+    actualQuery['end-date'] = config.query.endDate;
+    actualQuery['start-date'] = config.query.startDate;
+  }
+
+  return actualQuery;
+};
+
+
+/**
+ * Handles setting default and lastNdays dates.
+ * If lastNdays has been set, Updates the start and end date.
  * If neither start not end date is set, a default of the last
  * 28 days is used.
  * @param {Object} config A config object.
  * @this Points to the GaQuery object.
  */
 gadash.core.setDefaultDates = function(config) {
-  if (config['last-n-days']) {
-    config.query['end-date'] = gadash.util.lastNdays(0);
-    config.query['start-date'] =
-        gadash.util.lastNdays(config['last-n-days']);
+  if (config['lastNdays']) {
+    config.query['endDate'] = gadash.util.lastNdays(0);
+    config.query['startDate'] =
+        gadash.util.lastNdays(config['lastNdays']);
   } else {
-    if (!config.query['start-date'] || !config.query['end-date']) {
+    if (!config.query['startDate'] || !config.query['endDate']) {
       // Provide a default date range of last 28 days.
-      config.query['end-date'] = gadash.util.lastNdays(0);
-      config.query['start-date'] = gadash.util.lastNdays(28);
+      config.query['endDate'] = gadash.util.lastNdays(0);
+      config.query['startDate'] = gadash.util.lastNdays(28);
     }
   }
 };
@@ -1165,6 +1233,20 @@ gadash.getIncrementalCallback = function(numberOfCallbacks, finalCallback) {
 
 
 /**
+ * Returns an element either by ID or reference.
+ * @param {object|String} elementId Either the reference to the element or
+ *     if it's a string, it's ID.
+ * @return {object} The referenced element.
+ */
+gadash.util.getElement = function(elementId) {
+  if (gadash.util.getType(elementId) == 'string') {
+    return document.getElementById(elementId);
+  }
+  return elementId;
+};
+
+
+/**
  * Returns an data uri of an ajax preloader image.
  * @return {String}  data URI to be used in an image tag.
  */
@@ -1304,7 +1386,7 @@ gadash.gviz = gadash.gviz || {};
  * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onRequestDefault = function() {
-  document.getElementById(this.config.elementId).innerHTML = [
+  gadash.util.getElement(this.config.elementId).innerHTML = [
     '<div class="ga-loader" ',
     'style="color:#777;font-size:18px;overflow:hidden">',
     '<img style="display:block;float:left" src="',
@@ -1320,8 +1402,7 @@ gadash.gviz.onRequestDefault = function() {
  * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onResponseDefault = function() {
-  document.getElementById(this.config.elementId).innerHTML = '';
-
+  gadash.util.getElement(this.config.elementId).innerHTML = '';
 };
 
 
@@ -1441,7 +1522,7 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
  * @return {Object} visualization - returns the Chart instance.
  */
 gadash.gviz.getChart = function(id, chartType) {
-  var elem = document.getElementById(id);
+  var elem = gadash.util.getElement(id);
 
   if (google.visualization[chartType]) {
     return new google.visualization[chartType](elem);
@@ -1512,7 +1593,7 @@ gadash.getCoreChart = function(opt_config) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28
+ *     for the start time / date range: 'lastNdays': 28
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -1537,7 +1618,7 @@ gadash.getCoreLineChart = function(var_args) {
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -1553,7 +1634,7 @@ gadash.getCorePieChart = function(var_args) {
       'metrics': '',
       'sort': '',
       'dimensions': '',
-      'max-results': 5
+      'maxResults': 5
     }
   };
 
@@ -1586,7 +1667,7 @@ gadash.getCorePieChart = function(var_args) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -1612,7 +1693,7 @@ gadash.getCoreBarChart = function(var_args) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.

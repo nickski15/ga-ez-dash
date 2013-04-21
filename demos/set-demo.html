@@ -72,9 +72,9 @@
 
   // Base chart configuration. Used for all charts.
   var baseConfig = {
-    'last-n-days': 30,
     'query': {
-      'metrics': 'ga:visitors, ga:visits, ga:pageviews',
+      'lastNdays': 30,
+      'metrics': 'ga:visitors,ga:visits,ga:pageviews',
     },
     'chartOptions': {
       width: 700
@@ -111,7 +111,7 @@
     'query': {
       'dimensions': 'ga:source,ga:medium',
       'sort': '-ga:visitors',
-      'max-results': 100
+      'maxResults': 100
     }
   };
 
@@ -126,9 +126,20 @@
      // Add the table id to the base configuration object.
      baseConfig.query.ids = document.getElementById('tableId').value;
 
-     dataOverTime.setConfig(baseConfig).setConfig(dataOverTimeConfig).execute();
-     scoreCard.setConfig(baseConfig).setConfig(scoreCardConfig).execute();
-     sourceMediumTable.setConfig(baseConfig).setConfig(sourceMediumTableConfig).execute();
+     dataOverTime
+         .setConfig(baseConfig)
+         .setConfig(dataOverTimeConfig)
+         .execute();
+
+     scoreCard
+         .setConfig(baseConfig)
+         .setConfig(scoreCardConfig)
+         .execute();
+
+     sourceMediumTable
+         .setConfig(baseConfig)
+         .setConfig(sourceMediumTableConfig)
+         .execute();
 
      // Display UI.
      document.getElementById('ui').style.display = 'block';

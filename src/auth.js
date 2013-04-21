@@ -244,6 +244,7 @@ gadash.auth.loadUserNameHander_ = function(response) {
     gadash.auth.onAuthorizedDefault();
   }
 
+  // Move to pub sub -or- custom event.
   gadash.isLoaded = true;
   gadash.auth.executeCommandQueue_();
 };

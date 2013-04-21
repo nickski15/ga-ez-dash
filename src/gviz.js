@@ -46,7 +46,7 @@ gadash.gviz = gadash.gviz || {};
  * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onRequestDefault = function() {
-  document.getElementById(this.config.elementId).innerHTML = [
+  gadash.util.getElement(this.config.elementId).innerHTML = [
     '<div class="ga-loader" ',
     'style="color:#777;font-size:18px;overflow:hidden">',
     '<img style="display:block;float:left" src="',
@@ -62,8 +62,7 @@ gadash.gviz.onRequestDefault = function() {
  * @this {gadash.GaQuery} The base GaQuery object.
  */
 gadash.gviz.onResponseDefault = function() {
-  document.getElementById(this.config.elementId).innerHTML = '';
-
+  gadash.util.getElement(this.config.elementId).innerHTML = '';
 };
 
 
@@ -183,7 +182,7 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
  * @return {Object} visualization - returns the Chart instance.
  */
 gadash.gviz.getChart = function(id, chartType) {
-  var elem = document.getElementById(id);
+  var elem = gadash.util.getElement(id);
 
   if (google.visualization[chartType]) {
     return new google.visualization[chartType](elem);
@@ -254,7 +253,7 @@ gadash.getCoreChart = function(opt_config) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28
+ *     for the start time / date range: 'lastNdays': 28
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -279,7 +278,7 @@ gadash.getCoreLineChart = function(var_args) {
  * An optional configuration object is passed as a paramter and can override
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -295,7 +294,7 @@ gadash.getCorePieChart = function(var_args) {
       'metrics': '',
       'sort': '',
       'dimensions': '',
-      'max-results': 5
+      'maxResults': 5
     }
   };
 
@@ -328,7 +327,7 @@ gadash.getCorePieChart = function(var_args) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
@@ -354,7 +353,7 @@ gadash.getCoreBarChart = function(var_args) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
- *     for the start time / date range: 'last-n-days': 28.
+ *     for the start time / date range: 'lastNdays': 28.
  * @param {Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
