@@ -12,12 +12,11 @@
 </style>
 
 <div id="loading">Loading ...</div>
-<div id="authorized" class="hidden">
-You are authorized as {{userEmail}} <button id="unAuthorizeButton">Logout</button>
-</div>
-
 <div id="unauthorized" class="hidden">
   <button id="authorizeButton">Authorize Analytics</button>
+</div>
+<div id="authorized" class="hidden">
+You are authorized as {{userEmail}} <button id="unAuthorizeButton">Logout</button>
 </div>
 </template>
 
@@ -41,7 +40,7 @@ Toolkit.register(this, {
   ready: function() {
 
     this.$.authorizeButton.addEventListener('click', gadash.auth.authorize);
-    this.$.unAuthorizeButton.addEventListener('click', gadash.auth.authorize);
+    this.$.unAuthorizeButton.addEventListener('click', gadash.auth.accountLogout);
 
     this.handleUnAuthorized = gadash.util.bindMethod(this, function() {
       this.show('unauthorized');
