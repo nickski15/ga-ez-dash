@@ -13,6 +13,21 @@ And I'm going to be adding demos on this page: http://nickski15.github.com/ga-ez
 Changelog
 ---------
 
+### version 2.2.0
+- added web component support using toolkitchen.js
+- new components:
+  - ga-dashboard - binds controls to charts
+  - ga-auth - handles auth
+  - ga-input - for type = text and date
+  - ga-button - executes charts
+  - ga-chart - wrapper for chart builders
+- new demos
+- updated config object to accept all camelCase values
+- moved lastNdays into query
+- dimensions, metrics, and sort can be space separated
+- gadash.util.extend only copies values that are not null and undefined
+
+
 ### version 2.1.1
 - added new GaControl class to wrap UI elements with logic to return their
   current values in query config objects
