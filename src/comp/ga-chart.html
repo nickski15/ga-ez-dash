@@ -47,8 +47,8 @@ Toolkit.register(this, {
       'pie': gadash.getCorePieChart
     };
     this.gaQuery = typeMap[this.type](config);
-console.log(this.gaQuery);
-    // Runauto execute.
+
+    // Run autoexecute.
     if (this.autoexecute == '' || this.autoexecute) {
       this.gaQuery.execute();
     }

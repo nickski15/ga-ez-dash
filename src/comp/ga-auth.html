@@ -40,8 +40,8 @@ Toolkit.register(this, {
   },
   ready: function() {
 
-    this.$.authorizeButton.addEventListener('', gadash.auth.authorize);
-    this.$.unAuthorizeButton.addEventListener('', gadash.auth.authorize);
+    this.$.authorizeButton.addEventListener('click', gadash.auth.authorize);
+    this.$.unAuthorizeButton.addEventListener('click', gadash.auth.authorize);
 
     this.handleUnAuthorized = gadash.util.bindMethod(this, function() {
       this.show('unauthorized');
