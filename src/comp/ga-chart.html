@@ -1,0 +1,92 @@
+<element name="ga-chart"
+    attributes="
+        type
+        autoexecute
+        ids
+        metrics
+        dimensions
+        filters
+        segment
+        sort
+        startDate
+        endDate
+        lastNays
+        startIndex
+        maxResults
+        config">
+
+
+<template>
+<style>
+@import url(//ajax.googleapis.com/ajax/static/modules/gviz/1.1/table/table.css);
+@host {
+  * {
+    display: block;
+  }
+}
+#myChart {
+  display: inline-block;
+}
+</style>
+
+<content></content>
+<div id="myChart"></div>
+</template>
+
+<script>
+Toolkit.register(this, {
+  type: 'table', // default to type="table"
+
+  ready: function() {
+    var config = this.getConfig();
+    var typeMap = {
+      'table': gadash.getCoreChart,
+      'line': gadash.getCoreLineChart,
+      'bar': gadash.getCoreBarChart,
+      'column': gadash.getCoreColumnChart,
+      'pie': gadash.getCorePieChart
+    };
+    this.gaQuery = typeMap[this.type](config);
+console.log(this.gaQuery);
+    // Runauto execute.
+    if (this.autoexecute == '' || this.autoexecute) {
+      this.gaQuery.execute();
+    }
+  },
+  getConfig: function() {
+    var element = this.$.myChart;
+    var ids = this.ids
+    var metrics = this.metrics;
+    var dimensions = this.dimensions;
+    var filters = this.filters;
+    var segment = this.segment;
+    var sort = this.sort;
+    var startDate = this.startDate;
+    var endDate = this.endDate;
+    var lastNdays = this.lastNdays;
+    var startIndex = this.startIndex;
+    var maxResults = this.maxResults;
+
+    var config = {
+      elementId: element,
+      query: {
+        ids: ids,
+        metrics: metrics,
+        dimensions: dimensions,
+        filters: filters,
+        segment: segment,
+        sort: sort,
+        startDate: startDate,
+        endDate: endDate,
+        lastNdays: lastNdays,
+        startIndex: startIndex,
+        maxResults: maxResults
+      }
+    };
+
+    return config;
+  }
+
+});
+</script>
+</element>

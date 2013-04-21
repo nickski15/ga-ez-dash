@@ -36,8 +36,8 @@ gadash.core = gadash.core || {};
  * the API. Usage:
  *
  * gadash.getCoreQuery({
- *   'lastNdays': 28,
  *   'query': {
+ *     'lastNdays': 28,
  *     'ids': 'ga:1174',
  *     'metrics': 'ga:pageviews'
  *   },

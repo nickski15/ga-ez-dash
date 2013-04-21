@@ -1,0 +1,72 @@
+<element name="ga-list" extends="ul">
+<template>
+
+<style>
+ul {
+  padding: 0;
+  margin: 0;
+}
+ul > li {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style-type: none;
+}
+.cell {
+  color: red;
+  float: left;
+  display: block;
+}
+.cell:first {
+  width: 100px;
+}
+.cell:not(:first) {
+  margin-left: 15px;
+}
+</style>
+<ul id="list"><content></content></ul>
+</template>
+
+<script>
+Toolkit.register(this, {
+  ready: function() {
+
+    // Manipulating nodeLists don't current work. So this is a manual way.
+    // TODO(nm): Doesn't work. fix.
+
+/*
+    var lis = this.getElementsByTagName('li');
+    for (var i = 0, li; li = lis[i]; ++i) {
+
+      var liClone = li.cloneNode(true);
+      li.applyAuthorStyles = true;
+
+      // Remove all old nodes.
+      while(li.hasChildNodes()) {
+        li.removeChild(li.lastChild);
+      }
+
+      // Wrap text elements with span in Clone.
+      var node = liClone.firstChild;
+      while (node) {
+        if (node.nodeType == 3) {
+          // This is a text node. Wrap with a span.
+          var span = document.createElement('span');
+          span.appendChild(node.cloneNode());
+          span.classList.add('cell');
+          li.appendChild(span);
+        } else {
+          node.classList.add('cell');
+          li.appendChild(node);
+        }
+        node = node.nextSibling;
+      }
+    }
+  */
+
+  }
+});
+</script>
+
+</element>
+

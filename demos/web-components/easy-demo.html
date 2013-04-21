@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GA Component Demo 2</title>
+<script src="../../out/toolkit.min.js"></script>
+<script src="../../out/gadash-2.0.js"></script>
+
+<link rel="import" href="../../src/comp/ga-auth.html">
+<link rel="import" href="../../src/comp/ga-chart.html">
+<link rel="import" href="../../src/comp/ga-dashboard.html">
+<link rel="import" href="../../src/comp/ga-button.html">
+<link rel="import" href="../../src/comp/ga-input.html">
+
+</head>
+
+<body>
+  <h2>Super Simple</h2>
+
+<ga-dashboard>
+<ga-auth
+  apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
+  clientId="821751250764.apps.googleusercontent.com"></ga-auth>
+
+  <p>Input your table Id: <ga-input type="text" param="ids"></ga-input></p>
+  <ga-button type="execute">Draw Charts</ga-button><hr>
+
+  <ga-chart id="myTable"
+      type="table"
+      lastNdays="14"
+      metrics="ga:visits ga:pageviews"
+      dimensions="ga:source ga:medium ga:keyword"
+      filters="ga:source==google"
+      sort="-ga:visits"
+      maxResults="100"
+      startIndex="1"></ga-chart>
+
+</ga-dashboard>
+
+
+</body>

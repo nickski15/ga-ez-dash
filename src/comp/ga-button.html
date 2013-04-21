@@ -1,0 +1,20 @@
+<element name="ga-button"
+    extends="button"
+    attributes="type"
+    on-click="click">
+
+<template>
+  <button><content></content></button>
+</template>
+<script>
+Toolkit.register(this, {
+  type: 'execute',
+  click: function(event) {
+    this.send('execute');   // should it send the type???
+  }
+});
+</script>
+
+</element>
+
+

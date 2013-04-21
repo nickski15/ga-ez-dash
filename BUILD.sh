@@ -35,24 +35,24 @@ echo 'Building...'
 
 # Outputs a concatenated file.
 cat \
-  src/auth.js \
-  src/control.js \
-  src/query.js \
-  src/core.js \
-  src/util.js \
-  src/gviz.js \
-  src/component.js > "out/$out_name.js"
+  src/js/auth.js \
+  src/js/control.js \
+  src/js/query.js \
+  src/js/core.js \
+  src/js/util.js \
+  src/js/gviz.js \
+  src/js/component.js > "out/$out_name.js"
 
 
 # Outputs a minified file.
 java -jar "$closurePath" \
   --compilation_level SIMPLE_OPTIMIZATIONS \
-  --js="src/auth.js" \
-  --js="src/control.js" \
-  --js="src/query.js" \
-  --js="src/core.js" \
-  --js="src/util.js" \
-  --js="src/gviz.js" \
-  --js="src/component.js" \
+  --js="src/js/auth.js" \
+  --js="src/js/control.js" \
+  --js="src/js/query.js" \
+  --js="src/js/core.js" \
+  --js="src/js/util.js" \
+  --js="src/js/gviz.js" \
+  --js="src/js/component.js" \
   --js_output_file="out/$out_name-min.js"
 

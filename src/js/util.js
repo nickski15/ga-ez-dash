@@ -277,6 +277,7 @@ gadash.util.formatGAString = function(gaString) {
  *     extend({'a': {'b': 2}}, {'a': {'c': 1}}) will result in:
  *     {'a': {'b': 2, 'c': 1}}
  * Once run, modifying the from object will not impact the to object.
+ * Only keys with non-null or undefined values will be copied.
  * NOTE: Arrays will write over each other.
  * NOTE: This is unsafe in that circular references are not checked. Calling
  * this method with a circular reference could cause an infinite loop.
@@ -285,12 +286,14 @@ gadash.util.formatGAString = function(gaString) {
  */
 gadash.util.extend = function(from, to) {
   for (var key in from) {
-    var type = gadash.util.getType(from[key]);
-    if (type == 'object') {
-      to[key] = to[key] || {};
-      gadash.util.extend(from[key], to[key]);
-    } else {
-      to[key] = from[key];
+    if (from[key] !== null && from[key] !== undefined) {
+      var type = gadash.util.getType(from[key]);
+      if (type == 'object') {
+        to[key] = to[key] || {};
+        gadash.util.extend(from[key], to[key]);
+      } else {
+        to[key] = from[key];
+      }
     }
   }
 };

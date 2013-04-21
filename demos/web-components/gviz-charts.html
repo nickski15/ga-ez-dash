@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>GA Chart Component Demo</title>
+
+<script src="../../out/toolkit.min.js"></script>
+<script src="../../out/gadash-2.0.js"></script>
+
+<link rel="import" href="../../src/comp/ga-dashboard.html">
+<link rel="import" href="../../src/comp/ga-chart.html">
+
+<script>
+gadash.init({
+  apiKey: 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+  clientId: '821751250764.apps.googleusercontent.com'
+});
+</script>
+
+<!--
+<style>
+@import url(http://fonts.googleapis.com/css?family=Arvo);
+
+body {
+  font-family: 'Arvo', serif;
+  padding: 1em 3em;
+}
+</style>
+-->
+</head>
+<body>
+
+<header>
+  <p>This app embeds &lt;ga-dashboard>. It passes data to it's submodules</p>
+</header>
+
+<!-- Display the user interface -->
+<div id="gadash-auth">Loading ...</div>
+<hr>
+
+<!-- <ga-dashboard ua="1234567890" startdate="2012-01-01" enddate="2013-01-01"> 
+<ga-dashboard ua="1234567890">
+
+
+
+
+  <ga-chart type="line"></ga-chart>
+  <ga-chart>
+    <h2>Chart title</h2>
+  </ga-chart>
+  <ga-table></ga-table>
+
+</ga-dashboard>-->
+
+
+
+<ga-chart id="myChart1"
+    ids="ga:1174"
+    metrics="ga:visits ga:pageviews"
+    dimensions="ga:source ga:medium"
+    autoexecute></ga-chart>
+
+<ga-chart id="myChart2"
+    type="line"
+    ids="ga:1174"
+    metrics="ga:visits ga:pageviews"
+    autoexecute></ga-chart>
+
+<ga-chart id="myChart3"
+    type="column"
+    ids="ga:1174"
+    metrics="ga:visits ga:pageviews"
+    autoexecute></ga-chart>
+
+<ga-chart id="myChart4"
+    type="bar"
+    ids="ga:1174"
+    metrics="ga:visits ga:pageviews"
+    autoexecute></ga-chart>
+
+
+
+<script>
+
+document.addEventListener('WebComponentsReady', function(e) {
+/*
+  document.getElementById('myChart1').gaQuery.execute();
+  document.getElementById('myChart2').gaQuery.execute();
+  document.getElementById('myChart3').gaQuery.execute();
+  document.getElementById('myChart4').gaQuery.execute();
+*/
+
+  /*
+  var dashboard = document.querySelector('ga-dashboard');
+  dashboard.addEventListener('success', function(e) {
+    alert('Success! ' + e.detail.msg)
+  });
+
+  // Optionally config the dashboard via its imperative API:
+  // dashboard.init({
+  //     startDate: '2012-01-01',
+  //     endDate: '2013-01-01'
+  //   });
+  */
+});
+
+</script>
+</body>
+</html>
