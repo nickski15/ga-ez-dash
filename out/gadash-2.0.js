@@ -455,6 +455,10 @@ gadash.control.getConfigObjDetails = function(dotNotation) {
  */
 
 
+// Namespace.
+var gadash = gadash || {};
+
+
 
 /**
  * A Core GaQuery object is the base object to perform a Core Reporting API
@@ -601,6 +605,36 @@ gadash.GaQuery.prototype.executeHandlers_ = function(userFunction,
     gadash.util.bindMethod(this, defaultFunc)(opt_args);
   }
 };
+
+
+/**
+ * Common method to display errors. This method is here so that any API
+ * queries can use it.
+ * Checks to see if there is an element with the ID of errors.
+ * If not, a div is created with this ID.
+ * The error message is formatted and printed to this div.
+ * @param {String} error The error object returned by the API.
+ */
+gadash.onErrorDefault = function(error) {
+  var errorDiv = document.getElementById('errors');
+
+  // Create error div if not already made.
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.setAttribute('id', 'errors');
+    errorDiv.innerHTML = 'ERRORS:' + '<br />';
+    document.body.appendChild(errorDiv);
+  }
+
+  // TODO(nm): Need better error handling. + html escape.
+  // Prints GaQuery elementId and message to error div.
+  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
+      error.message + '<br />';
+  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
+  //    message + '<br />';
+};
+
 
 // Copyright 2012 Google Inc. All Rights Reserved.
 
@@ -765,33 +799,6 @@ gadash.core.setDefaultDates = function(config) {
       config.query['startDate'] = gadash.util.lastNdays(28);
     }
   }
-};
-
-
-/**
- * Checks to see if there is an element with the ID of errors.
- * If not, a div is created with this ID.
- * The error message is formatted and printed to this div.
- * @param {String} error The error object returned by the API.
- */
-gadash.onErrorDefault = function(error) {
-  var errorDiv = document.getElementById('errors');
-
-  // Create error div if not already made.
-  if (!errorDiv) {
-    errorDiv = document.createElement('div');
-    errorDiv.style.color = 'red';
-    errorDiv.setAttribute('id', 'errors');
-    errorDiv.innerHTML = 'ERRORS:' + '<br />';
-    document.body.appendChild(errorDiv);
-  }
-
-  // TODO(nm): Need better error handling. + html escape.
-  // Prints GaQuery elementId and message to error div.
-  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
-      error.message + '<br />';
-  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
-  //    message + '<br />';
 };
 
 // Copyright 2012 Google Inc. All Rights Reserved.

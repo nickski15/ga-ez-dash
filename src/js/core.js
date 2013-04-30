@@ -163,30 +163,3 @@ gadash.core.setDefaultDates = function(config) {
   }
 };
 
-
-/**
- * Checks to see if there is an element with the ID of errors.
- * If not, a div is created with this ID.
- * The error message is formatted and printed to this div.
- * @param {String} error The error object returned by the API.
- */
-gadash.onErrorDefault = function(error) {
-  var errorDiv = document.getElementById('errors');
-
-  // Create error div if not already made.
-  if (!errorDiv) {
-    errorDiv = document.createElement('div');
-    errorDiv.style.color = 'red';
-    errorDiv.setAttribute('id', 'errors');
-    errorDiv.innerHTML = 'ERRORS:' + '<br />';
-    document.body.appendChild(errorDiv);
-  }
-
-  // TODO(nm): Need better error handling. + html escape.
-  // Prints GaQuery elementId and message to error div.
-  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
-      error.message + '<br />';
-  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
-  //    message + '<br />';
-};
-
