@@ -13,6 +13,13 @@ And I'm going to be adding demos on this page: http://nickski15.github.com/ga-ez
 Changelog
 ---------
 
+### version 2.2.1
+- added new account / property / profile JS control
+- added new web component for profile select control
+- moving to pubsub model to determine when library loaded
+- new profile select demos
+
+
 ### version 2.2.0
 - added web component support using polymer.js
 - new components:
