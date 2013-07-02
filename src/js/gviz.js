@@ -102,7 +102,7 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
   if (resp.rows && resp.rows.length) {
     numOfRows = resp.rows.length;
   } else {
-    this.defaultOnError('No rows returned for that query.');
+    gadash.util.displayError('No rows returned for that query.');
   }
 
   /*

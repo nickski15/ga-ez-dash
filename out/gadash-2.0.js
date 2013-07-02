@@ -1577,7 +1577,7 @@ gadash.gviz.getDataTable = function(resp, opt_chartType) {
   if (resp.rows && resp.rows.length) {
     numOfRows = resp.rows.length;
   } else {
-    this.defaultOnError('No rows returned for that query.');
+    gadash.util.displayError('No rows returned for that query.');
   }
 
   /*
@@ -2122,8 +2122,8 @@ gadash.ui.acct.cache = {};
 
 /**
  * Returns a new account select element.
- * @param {String} elementId The Id of the element in which to render
- *     this object.
+ * @param {Object|String} elementId The HTMLElement or Id of the element in
+ *     which to render this object.
  * @return {gadash.ui.ProfileSelect} A new account select object.
  */
 gadash.getProfileSelect = function(elementId) {
@@ -2136,8 +2136,8 @@ gadash.getProfileSelect = function(elementId) {
  * Create a new ProfileSelect object that allows users to visually select
  * account, web properties, and finally profiles. This dynamically
  * replaces the contents of elementId with a set of controls.
- * @param {String} elementId The ID of the containing div in which to render
- *     this control.
+ * @param {Object|String} elementId The HTMLElement or Id of the element in
+ *     which to render this object.
  * @constructor.
  */
 gadash.ui.ProfileSelect = function(elementId) {
@@ -2181,8 +2181,25 @@ gadash.ui.ProfileSelect.prototype.initLoad = function() {
  * @this points to the ProfileSelect instance.
  */
 gadash.ui.ProfileSelect.prototype.addChangeHandler = function(selectId) {
-  document.getElementById(this.getId_(selectId)).addEventListener('change',
+  this.getElement(this.getId_(selectId)).addEventListener('change',
       gadash.util.bindMethod(this, this.getChangeHandler(selectId)));
+};
+
+
+/**
+ * Helper function to return an element relative to this div. This is useful
+ * for polymer components that do not have access to the document object.
+ * @param {String=} opt_elementId the id of the element to retrieve.
+ * @return {Object} The reference to the element.
+ * @this {gadash.ui.ProfileSelect} points to the ProfileSelect object.
+ */
+gadash.ui.ProfileSelect.prototype.getElement = function(opt_elementId) {
+  var opt_elementId = opt_elementId || false;
+  var element = gadash.util.getElement(this.elementId);
+  if (opt_elementId) {
+    element = element.querySelector('#' + opt_elementId);
+  }
+  return element;
 };
 
 
@@ -2211,13 +2228,15 @@ gadash.ui.ProfileSelect.prototype.getTableIdConfig = function() {
 
 /**
  * Returns a namespaced id for this control. The ID of the element for this
- * control is used as a namespace.
- * @param {String} id The ID to namespace.
+ * control is used as a namespace. This first gets the object reference, then
+ * it returns this ID. This ensures the value always works.
+ * @param {Object|String} id The HTMLElement or ID to namespace.
  * @return {String} The namespaced ID.
  * @private.
  */
 gadash.ui.ProfileSelect.prototype.getId_ = function(id) {
-  return this.elementId + '-' + id;
+  var elementId = gadash.util.getElement(this.elementId).id;
+  return elementId + '-' + id;
 };
 
 
@@ -2225,7 +2244,7 @@ gadash.ui.ProfileSelect.prototype.getId_ = function(id) {
  * Adds the HTML controls to the UI.
  */
 gadash.ui.ProfileSelect.prototype.initView = function() {
-  document.getElementById(this.elementId).innerHTML = [
+  gadash.util.getElement(this.elementId).innerHTML = [
     '<div style="margin-top:5px">Select an account: ',
     '<select id="', this.getId_('acct-select'), '">',
     '<option>Loading...</option></select></div>',
@@ -2262,7 +2281,7 @@ gadash.ui.ProfileSelect.prototype.handleAccounts = function(results) {
 
     gadash.ui.acct.sortResults(results);
 
-    document.getElementById(this.getId_('acct-select')).innerHTML =
+    this.getElement(this.getId_('acct-select')).innerHTML =
         gadash.ui.acct.getOptionsFromResults(results, this.selected.accountId);
 
     this.loadProperties();
@@ -2286,15 +2305,15 @@ gadash.ui.ProfileSelect.prototype.isError = function(results) {
   } else if (!results.items || !results.items.length) {
     switch (results.kind) {
       case 'analytics#account':
-        document.getElementById(this.getId_('acct-select')).innerHTML =
+        this.getElement(this.getId_('acct-select')).innerHTML =
             gadash.ui.acct.getOption('none', 'No account found');
 
       case 'analytics#webproperty':
-        document.getElementById(this.getId_('acct-select')).innerHTML =
+        this.getElement(this.getId_('acct-select')).innerHTML =
             gadash.ui.acct.getOption('none', 'No properties found');
 
       case 'analytics#profile':
-        document.getElementById(this.getId_('acct-select')).innerHTML =
+        this.getElement(this.getId_('acct-select')).innerHTML =
             gadash.ui.acct.getOption('none', 'No profiles found');
     }
     return true;
@@ -2360,7 +2379,7 @@ gadash.ui.ProfileSelect.prototype.handleProperties = function(results) {
       this.selected.propertyId = results.items[0].id;
     }
 
-    document.getElementById(this.getId_('property-select')).innerHTML =
+    this.getElement(this.getId_('property-select')).innerHTML =
         gadash.ui.acct.getOptionsFromResults(results,
             this.selected.propertyId);
 
@@ -2400,7 +2419,7 @@ gadash.ui.ProfileSelect.prototype.handleProfiles = function(results) {
       this.selected.profileId = results.items[0].id;
     }
 
-    document.getElementById(this.getId_('profile-select')).innerHTML =
+    this.getElement(this.getId_('profile-select')).innerHTML =
         gadash.ui.acct.getOptionsFromResults(results,
             this.selected.profileId);
 
@@ -2424,6 +2443,10 @@ gadash.ui.acct.getOptionsFromResults = function(results, opt_selectedId) {
   var output = [];
   for (var i = 0, item; item = results.items[i]; ++i) {
     var isSelected = item.id == selectedId ? true : false;
+    if (item.profileCount == 0) {
+      // Don't add web property that only have deleted profiles.
+      continue;
+    }
     output.push(gadash.ui.acct.getOption(item.id, item.name, isSelected));
   }
   return output.join('');

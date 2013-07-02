@@ -10,6 +10,7 @@
 <link rel="import" href="../../src/comp/ga-dashboard.html">
 <link rel="import" href="../../src/comp/ga-button.html">
 <link rel="import" href="../../src/comp/ga-input.html">
+<link rel="import" href="../../src/comp/ga-profile-select.html">
 
 </head>
 
@@ -21,7 +22,9 @@
   apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
   clientId="821751250764.apps.googleusercontent.com"></ga-auth>
 
-  <p>Input your table Id: <ga-input type="text" param="ids"></ga-input></p>
+  <hr>
+  <ga-profile-select></ga-profile-select>
+  <hr>
   <ga-button type="execute">Draw Charts</ga-button><hr>
 
   <ga-chart id="myTable"

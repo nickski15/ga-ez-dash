@@ -1,0 +1,19 @@
+<element name="ga-profile-select" extends="div">
+<template>
+  <content></content>
+	<div id="myControl"></div>
+</template>
+<script>
+Polymer.register(this, {
+  ready: function() {
+	  this.profileSelect = gadash.getProfileSelect(this.$.myControl);
+  },
+  getQuery: function() {
+    return {
+      'ids': this.profileSelect.getTableId()
+    }
+  }
+});
+</script>
+
+</element>

@@ -5,7 +5,7 @@ Polymer.register(this, {
 
   execute: function() {
     var query = {};
-    var controls = this.querySelectorAll('ga-input');
+    var controls = this.querySelectorAll('ga-input, ga-profile-select');
     for (var i = 0, control; control = controls[i]; ++i) {
       var val = control.getQuery();
       gadash.util.extend(val, query);

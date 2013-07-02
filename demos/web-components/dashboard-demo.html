@@ -11,6 +11,8 @@
 <link rel="import" href="../../src/comp/ga-button.html">
 <link rel="import" href="../../src/comp/ga-input.html">
 <link rel="import" href="../../src/comp/ga-list.html">
+<link rel="import" href="../../src/comp/ga-profile-select.html">
+
 
 </head>
 <body>
@@ -24,36 +26,33 @@
 <hr>
 
 <ga-dashboard>
-<ga-list>
-  <li>Enter your Table ID: <ga-input param="ids"></ga-input>
-      (Format ga:xxx where xxx is your profile ID)</li>
 
-  <li>Start Date: <ga-input type="date" param="startDate"></ga-input></li>
-  <li>End Date: <ga-input type="date" param="endDate"></ga-input></li>
-</ga-list>
+  <ga-profile-select></ga-profile-select>
+  <hr>
+  <p>Start Date: <ga-input type="date" param="startDate"></ga-input></p>
+  <p>End Date: <ga-input type="date" param="endDate"></ga-input></p>
+  <hr>
+  <ga-button type="execute">Draw Charts</ga-button><br>
+  <hr>
 
-<hr>
 
-<ga-button type="execute">Draw Charts</ga-button><br>
+  <h2>Here's My Simple Dashboard!</h2>
 
-<hr>
 
-<h2>Here's My Simple Dashboard!</h2>
+  <h3>Visits & Pageviews Over Time</h3>
+  <ga-chart id="myChart1"
+      type="line"
+      metrics="ga:visits ga:pageviews"></ga-chart>
 
-<h3>Visits & Pageviews Over Time</h3>
-<ga-chart id="myChart1"
-    type="line"
-    metrics="ga:visits ga:pageviews"></ga-chart>
+  <h3>Total Visits & Pageviews</h3>
+  <ga-chart id="myChart2"
+      metrics="ga:visits ga:pageviews"></ga-chart>
 
-<h3>Total Visits & Pageviews</h3>
-<ga-chart id="myChart2"
-    metrics="ga:visits ga:pageviews"></ga-chart>
-
-<h3>Visits & Pageviews by Source</h3>
-<ga-chart id="myChart3"
-    metrics="ga:visits ga:pageviews"
-    dimensions="ga:source ga:medium"
-    sort="-ga:visits"></ga-chart>
+  <h3>Visits & Pageviews by Source</h3>
+  <ga-chart id="myChart3"
+      metrics="ga:visits ga:pageviews"
+      dimensions="ga:source ga:medium"
+      sort="-ga:visits"></ga-chart>
 
 </ga-dashboard>
 
