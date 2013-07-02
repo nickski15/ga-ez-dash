@@ -246,7 +246,7 @@ gadash.auth.loadUserNameHander_ = function(response) {
 
   // Move to pub sub -or- custom event.
   gadash.isLoaded = true;
-  gadash.auth.executeCommandQueue_();
+  gadash.util.pubsub.publish(gadash.util.pubsub.libsLoaded);
 };
 
 
@@ -427,380 +427,6 @@ gadash.control.getConfigObjDetails = function(dotNotation) {
     'configLastKey': configLastKey
   };
 };
-// Copyright 2012 Google Inc. All Rights Reserved.
-
-/* Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
- * @author nickski15@gmail.com (Nick Mihailovski)
- * @author laurent1jacquot@gmail.com (Laurent Jacquot)
- * @author ooahmad@gmail.com (Osama Ahmad)
- *
- * @fileoverview
- * Provides the Abstract GaQuery class to query the Google Analytics APIs.
- * This class defines all the interfaces and logic flow of this object.
- * To make this class functional, various methods need to be defined.
- */
-
-
-// Namespace.
-var gadash = gadash || {};
-
-
-
-/**
- * A Core GaQuery object is the base object to perform a Core Reporting API
- * query. It accepts an optional configuration object that contains an
- * object defining the query. Also changes start and end date of
- * the query, if lastNdays is set in the config.
- * Usage:
- * var gqQuery = new gadash.GaQuery({
- *   query: {
- *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
- *     'startDate': '2012-01-01',
- *     'endDate': '2012-02-01',
- *     'metrics': 'ga:visits'
- *   },
- *   onSuccess: function(response) {
- *     // Handle API response.
- *   }
- * });
- *
- * @param {Object=} opt_config Contains all configuration variables
- *     of a Chart object. This parameter is passed by value, and a deep
- *     copy is made. Once set, the original object can be modified and
- *     it will not affect this object.
- * @return {Object} Returns a reference to the newly instantiated
- *     Chart instance. Useful for chaining methods together.
- * @constructor
- */
-gadash.GaQuery = function(opt_config) {
-  this.config = {};
-  this.setConfig(opt_config);
-  return this;
-};
-
-
-/**
- * Extends the values in the GaQuery's config object with the keys in
- * the config parameters. If a key in config already exists in the GaQuery,
- * and the value is not an object, the new value overwrites the old.
- * @param {Object} config The config object to set inside this object.
- * @return {Object} The current instance of the Chart object. Useful
- *     for chaining methods.
- */
-gadash.GaQuery.prototype.setConfig = function(config) {
-  gadash.util.extend(config, this.config);
-  return this;
-};
-
-
-/**
- * First checks to see if the GA library is loaded. If it is then the
- * GaQuery can be executed right away. Otherwise, other operations are queued,
- * so the execute command is pushed to the command queue to be executed in
- * the same order as originally called.
- * @param {Object=} opt_config An optional query configuration object.
- * @this Points to the current GaQuery instance.
- * @return {Object} The current instance of this GaQuery object. Useful for
- *     chaining methods.
- */
-gadash.GaQuery.prototype.execute = function(opt_config) {
-  if (opt_config) this.setConfig(opt_config);
-
-  // If the client library has loaded.
-  if (gadash.isLoaded) {
-    this.executeFunction_();
-  } else {
-    var executeFunction_ = gadash.util.bindMethod(this, this.executeFunction_);
-    gadash.commandQueue_.push(executeFunction_);
-  }
-  return this;
-};
-
-
-/**
- * Makes a request to the Google Analytics API.
- * Updates the default dates.
- * Next, the function also creates and executes a Google Analytics
- * API request using the Chart objects callback method. The callback
- * is bound to the Chart instance so a reference back to this query is
- * maintained within the callback.
- * @private.
- */
-gadash.GaQuery.prototype.executeFunction_ = function() {
-  this.executeHandlers_('onRequest', 'onRequestDefault');
-};
-
-
-/**
- * Callback function that is called after a GA query is executed.
- * First, the function checks to see if there are any errors on the
- * response.
- * If an error occured, if the config object contains a method
- * named onError, it is executed and is passed the error object returned
- * from the API. If the the onError does not return false, the default
- * error handler is executed.
- * If the API query was successful, if the config object contains a method
- * named onSuccess, it is executed nd passed the response form the API. If
- * the onSuccess function does not return false, the onSuccessDefault
- * function is called.
- * Both the onSuccess and onError functions are executed in the context
- * of the GaQuery object.
- * @param {Object} response - Google Analytics API JSON response.
- */
-gadash.GaQuery.prototype.callback = function(response) {
-
-  this.executeHandlers_('onResponse', 'onResponseDefault');
-
-  if (response.error) {
-    // API encountered an error.
-    this.executeHandlers_('onError', 'onErrorDefault', response.error);
-
-  } else {
-    // Successful response.
-    this.executeHandlers_('onSuccess', 'onSuccessDefault', response);
-  }
-};
-
-
-/**
- * Helper method to execute default and user defined methods.
- * First checks to see if a user function is defined on the config object.
- * If it is, it's executed in the context of this object and passed the
- * args parameter. Next if the user function does not return false,
- * the default function handler is executed in the context of this object,
- * and also passed the args parameter.
- * @param {String} userFunction The name of the user defined function to be
- *     found on the config object.
- * @param {String} defaultFunction The name of the defaul function to be
- *     executed if no user function is found.
- * @param {Object=} opt_args The parameter to pass to both functions above.
- * @private
- */
-gadash.GaQuery.prototype.executeHandlers_ = function(userFunction,
-    defaultFunction, opt_args) {
-
-  var userFunc = this.config[userFunction];
-  var defaultFunc = this.config[defaultFunction];
-
-  if (gadash.util.getType(userFunc) == 'function') {
-    if (gadash.util.bindMethod(this, userFunc)(opt_args) !== false &&
-        defaultFunc) {
-      gadash.util.bindMethod(this, defaultFunc)(opt_args);
-    }
-  } else if (defaultFunc) {
-    gadash.util.bindMethod(this, defaultFunc)(opt_args);
-  }
-};
-
-
-/**
- * Common method to display errors. This method is here so that any API
- * queries can use it.
- * Checks to see if there is an element with the ID of errors.
- * If not, a div is created with this ID.
- * The error message is formatted and printed to this div.
- * @param {String} error The error object returned by the API.
- */
-gadash.onErrorDefault = function(error) {
-  var errorDiv = document.getElementById('errors');
-
-  // Create error div if not already made.
-  if (!errorDiv) {
-    errorDiv = document.createElement('div');
-    errorDiv.style.color = 'red';
-    errorDiv.setAttribute('id', 'errors');
-    errorDiv.innerHTML = 'ERRORS:' + '<br />';
-    document.body.appendChild(errorDiv);
-  }
-
-  // TODO(nm): Need better error handling. + html escape.
-  // Prints GaQuery elementId and message to error div.
-  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
-      error.message + '<br />';
-  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
-  //    message + '<br />';
-};
-
-
-// Copyright 2012 Google Inc. All Rights Reserved.
-
-/* Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
-/**
- * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
- * @author nickski15@gmail.com (Nick Mihailovski)
- * @author laurent1jacquot@gmail.com (Laurent Jacquot)
- * @author ooahmad@gmail.com (Osama Ahmad)
- *
- * @fileoverview
- * Provides the CoreQuery object that simplifies querying the
- * Google Analytics Core Reporting API.
- */
-
-
-// Core namespace.
-gadash.core = gadash.core || {};
-
-
-/**
- * Core Query Builder. This returns a basic object to query the Core Reporting
- * API. Developers must override the onSuccess handler to manage the results of
- * the API. Usage:
- *
- * gadash.getCoreQuery({
- *   'query': {
- *     'lastNdays': 28,
- *     'ids': 'ga:1174',
- *     'metrics': 'ga:pageviews'
- *   },
- *   'onSuccess': handleData
- * });
- *
- * function handleData(results) {
- *   console.log(results);
- * }
- *
- * @param {Object=} opt_config An optional query configuration object.
- * @return {gadash.GaQuery} A GaQuery object configured to query the
- *     Core Reporting API.
- */
-gadash.getCoreQuery = function(opt_config) {
-  return new gadash.GaQuery({
-    'onRequestDefault': gadash.core.onRequestDefault,
-    'onErrorDefault': gadash.onErrorDefault
-  }).setConfig(opt_config);
-};
-
-
-/**
- * Requests data for the Core Reporting API. This first updates the
- * dates for the configuration object. It then creates a query based
- * on the query parameter in the config object. Finally it executes the
- * query and sets the callback to this.callback.
- * @this {gadash.GaQuery} The GaQuery object.
- */
-gadash.core.onRequestDefault = function() {
-  this.config.actualQuery = gadash.core.getCoreQueryObj(this.config);
-  var request = gapi.client.analytics.data.ga.get(this.config.actualQuery);
-  request.execute(gadash.util.bindMethod(this, this.callback));
-};
-
-
-/**
- * Returns the actual query values issued to the Google Analytics Core
- * reporting API as an object. This figures out the default dates.
- * It also removes any unused keys. It also properly maps camel
- * cased values into their hyphenated equivalents.
- * @param {object} config The configuration object.
- * @return {Object} A new object that for the actual query parameters that
- *     should be sent to the GA API.
- */
-gadash.core.getCoreQueryObj = function(config) {
-  var actualQuery = {};
-
-  if (config.query.ids) {
-    actualQuery.ids = config.query.ids;
-  }
-
-  if (config.query.metrics) {
-    actualQuery.metrics = config.query.metrics.split(' ').join(',');
-  }
-
-  if (config.query.dimensions) {
-    actualQuery.dimensions = config.query.dimensions.split(' ').join(',');
-  }
-
-  if (config.query.filters) {
-    actualQuery.filters = config.query.filters;
-  }
-
-  if (config.query.segment) {
-    actualQuery.segment = config.query.segment;
-  }
-
-  if (config.query.sort) {
-    actualQuery.sort = config.query.sort.split(' ').join(',');
-  }
-
-  if (config.query.startIndex) {
-    actualQuery['start-index'] = config.query.startIndex;
-  }
-  if (config.query.maxResults) {
-    actualQuery['max-results'] = config.query.maxResults;
-  }
-
-  /* Handles setting default and lastNdays dates.
-   * If lastNdays has been set, Updates the start and end date.
-   * If neither start not end date is set, a default of the last
-   * 28 days is used. Otherwise the original dates are used.
-   */
-  if (config.query.lastNdays) {
-    actualQuery['end-date'] = gadash.util.lastNdays(0);
-    actualQuery['start-date'] = gadash.util.lastNdays(config.query.lastNdays);
-
-  } else if (!config.query.startDate || !config.query.endDate) {
-    // Provide a default date range of last 28 days.
-    actualQuery['end-date'] = gadash.util.lastNdays(0);
-    actualQuery['start-date'] = gadash.util.lastNdays(28);
-
-  } else {
-    // Both exist. Move the dates over.
-    actualQuery['end-date'] = config.query.endDate;
-    actualQuery['start-date'] = config.query.startDate;
-  }
-
-  return actualQuery;
-};
-
-
-/**
- * Handles setting default and lastNdays dates.
- * If lastNdays has been set, Updates the start and end date.
- * If neither start not end date is set, a default of the last
- * 28 days is used.
- * @param {Object} config A config object.
- * @this Points to the GaQuery object.
- */
-gadash.core.setDefaultDates = function(config) {
-  if (config['lastNdays']) {
-    config.query['endDate'] = gadash.util.lastNdays(0);
-    config.query['startDate'] =
-        gadash.util.lastNdays(config['lastNdays']);
-  } else {
-    if (!config.query['startDate'] || !config.query['endDate']) {
-      // Provide a default date range of last 28 days.
-      config.query['endDate'] = gadash.util.lastNdays(0);
-      config.query['startDate'] = gadash.util.lastNdays(28);
-    }
-  }
-};
-
 // Copyright 2012 Google Inc. All Rights Reserved.
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
@@ -1347,6 +973,505 @@ gadash.util.getLoaderUri = function() {
     'A7AAAAAAAAAAAA'].join('');
 };
 
+
+/**
+ * Namespace for pubsub module.
+ * Usage:
+ * gadash.util.pubsub.subscribe - used to subscribe a function to be executed
+ * gadash.util.pubsub.publish - used to broadcast an event and execute all
+ *     subscribed functions.
+ */
+gadash.util.pubsub = gadash.util.pubsub || {};
+
+
+/**
+ * Message for when the all the main libraries have loaded.
+ * @type {String}
+ */
+gadash.util.pubsub.libsLoaded = 'LIBS_LOADED';
+
+
+/**
+ * Used to store the relationship between messages and subscribed functions.
+ * @type {Object}
+ */
+gadash.util.pubsub.map = {};
+
+
+/**
+ * Subscribes a function to a particular message.
+ * @param {String} message The message to which the function func is
+ *     subscribed.
+ * @param {function} func The function to subscribe to a particular message.
+ */
+gadash.util.pubsub.subscribe = function(message, func) {
+  if (!gadash.util.pubsub.map[message]) {
+    gadash.util.pubsub.map[message] = [];
+  }
+  gadash.util.pubsub.map[message].push(func);
+};
+
+
+/**
+ * Publishes message. All subscribed functions are executed.
+ * @param {String} message The message to publish.
+ */
+gadash.util.pubsub.publish = function(message) {
+  if (gadash.util.pubsub.map[message] &&
+      gadash.util.pubsub.map[message].length) {
+    for (var i = 0, func; func = gadash.util.pubsub.map[message][i]; ++i) {
+      func();
+    }
+  }
+};
+
+
+/**
+ * TODO: Should be namespaced by user ID.
+ * Stores data in localstorage if avaliable.
+ * @param {string} key The key of the data to store.
+ * @param {Object} data The data to store.
+ */
+gadash.util.save = function(key, data) {
+  if (localStorage && JSON) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+};
+
+
+/**
+ * Loads data from localstorage if avaliable.
+ * @param {string} key The key of the data to store.
+ * @return {Object} The data stored under the key.
+ */
+gadash.util.load = function(key) {
+  if (localStorage && JSON) {
+    return JSON.parse(localStorage.getItem(key));
+  }
+};
+
+
+/**
+ * Displays an error message to the user in a div with the ID of
+ * "errors". If this div doesn't exist, it is created and appeneded to.
+ * The message is html escaped by default.
+ * @param {String} message The error message to display.
+ */
+gadash.util.displayError = function(message) {
+  var errorDiv = document.getElementById('errors');
+
+  // Create error div if not already made.
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.setAttribute('id', 'errors');
+    errorDiv.innerHTML = 'ERRORS:' + '<br>';
+    document.body.appendChild(errorDiv);
+  }
+
+  errorDiv.innerHTML += gadash.util.htmlEscape(message) + '<br>';
+};
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ * @author laurent1jacquot@gmail.com (Laurent Jacquot)
+ * @author ooahmad@gmail.com (Osama Ahmad)
+ *
+ * @fileoverview
+ * Provides the Abstract GaQuery class to query the Google Analytics APIs.
+ * This class defines all the interfaces and logic flow of this object.
+ * To make this class functional, various methods need to be defined.
+ */
+
+
+// Namespace.
+var gadash = gadash || {};
+
+
+/**
+* List of functions that are queued for execution. This is only used
+* until all the libraries have fully loaded.
+* @type {Array}
+* @private
+*/
+gadash.commandQueue_ = [];
+
+
+/**
+* Iterates through all commands on the commandQueue and executes them.
+* @private
+*/
+gadash.executeCommandQueue_ = function() {
+  for (var i = 0, command; command = gadash.commandQueue_[i]; ++i) {
+    command();
+  }
+};
+
+
+/**
+ * Subscribes the executeCommandQueue_ to execute once the libraries have
+ * loaded.
+ */
+gadash.util.pubsub.subscribe(gadash.util.pubsub.libsLoaded,
+    gadash.executeCommandQueue_);
+
+
+
+/**
+ * A Core GaQuery object is the base object to perform a Core Reporting API
+ * query. It accepts an optional configuration object that contains an
+ * object defining the query. Also changes start and end date of
+ * the query, if lastNdays is set in the config.
+ * Usage:
+ * var gqQuery = new gadash.GaQuery({
+ *   query: {
+ *     'ids': 'ga:xxxx', # Table ID where xxxx is the profile ID.
+ *     'startDate': '2012-01-01',
+ *     'endDate': '2012-02-01',
+ *     'metrics': 'ga:visits'
+ *   },
+ *   onSuccess: function(response) {
+ *     // Handle API response.
+ *   }
+ * });
+ *
+ * @param {Object=} opt_config Contains all configuration variables
+ *     of a Chart object. This parameter is passed by value, and a deep
+ *     copy is made. Once set, the original object can be modified and
+ *     it will not affect this object.
+ * @return {Object} Returns a reference to the newly instantiated
+ *     Chart instance. Useful for chaining methods together.
+ * @constructor
+ */
+gadash.GaQuery = function(opt_config) {
+  this.config = {};
+  this.setConfig(opt_config);
+  return this;
+};
+
+
+/**
+ * Extends the values in the GaQuery's config object with the keys in
+ * the config parameters. If a key in config already exists in the GaQuery,
+ * and the value is not an object, the new value overwrites the old.
+ * @param {Object} config The config object to set inside this object.
+ * @return {Object} The current instance of the Chart object. Useful
+ *     for chaining methods.
+ */
+gadash.GaQuery.prototype.setConfig = function(config) {
+  gadash.util.extend(config, this.config);
+  return this;
+};
+
+
+/**
+ * First checks to see if the GA library is loaded. If it is then the
+ * GaQuery can be executed right away. Otherwise, other operations are queued,
+ * so the execute command is pushed to the command queue to be executed in
+ * the same order as originally called.
+ * @param {Object=} opt_config An optional query configuration object.
+ * @this Points to the current GaQuery instance.
+ * @return {Object} The current instance of this GaQuery object. Useful for
+ *     chaining methods.
+ */
+gadash.GaQuery.prototype.execute = function(opt_config) {
+  if (opt_config) this.setConfig(opt_config);
+
+  // If the client library has loaded.
+  if (gadash.isLoaded) {
+    this.executeFunction_();
+  } else {
+    var executeFunction_ = gadash.util.bindMethod(this, this.executeFunction_);
+    gadash.commandQueue_.push(renderFunction);
+  }
+  return this;
+};
+
+
+/**
+ * Makes a request to the Google Analytics API.
+ * Updates the default dates.
+ * Next, the function also creates and executes a Google Analytics
+ * API request using the Chart objects callback method. The callback
+ * is bound to the Chart instance so a reference back to this query is
+ * maintained within the callback.
+ * @private.
+ */
+gadash.GaQuery.prototype.executeFunction_ = function() {
+  this.executeHandlers_('onRequest', 'onRequestDefault');
+};
+
+
+/**
+ * Callback function that is called after a GA query is executed.
+ * First, the function checks to see if there are any errors on the
+ * response.
+ * If an error occured, if the config object contains a method
+ * named onError, it is executed and is passed the error object returned
+ * from the API. If the the onError does not return false, the default
+ * error handler is executed.
+ * If the API query was successful, if the config object contains a method
+ * named onSuccess, it is executed nd passed the response form the API. If
+ * the onSuccess function does not return false, the onSuccessDefault
+ * function is called.
+ * Both the onSuccess and onError functions are executed in the context
+ * of the GaQuery object.
+ * @param {Object} response - Google Analytics API JSON response.
+ */
+gadash.GaQuery.prototype.callback = function(response) {
+
+  this.executeHandlers_('onResponse', 'onResponseDefault');
+
+  if (response.error) {
+    // API encountered an error.
+    this.executeHandlers_('onError', 'onErrorDefault', response.error);
+
+  } else {
+    // Successful response.
+    this.executeHandlers_('onSuccess', 'onSuccessDefault', response);
+  }
+};
+
+
+/**
+ * Helper method to execute default and user defined methods.
+ * First checks to see if a user function is defined on the config object.
+ * If it is, it's executed in the context of this object and passed the
+ * args parameter. Next if the user function does not return false,
+ * the default function handler is executed in the context of this object,
+ * and also passed the args parameter.
+ * @param {String} userFunction The name of the user defined function to be
+ *     found on the config object.
+ * @param {String} defaultFunction The name of the defaul function to be
+ *     executed if no user function is found.
+ * @param {Object=} opt_args The parameter to pass to both functions above.
+ * @private
+ */
+gadash.GaQuery.prototype.executeHandlers_ = function(userFunction,
+    defaultFunction, opt_args) {
+
+  var userFunc = this.config[userFunction];
+  var defaultFunc = this.config[defaultFunction];
+
+  if (gadash.util.getType(userFunc) == 'function') {
+    if (gadash.util.bindMethod(this, userFunc)(opt_args) !== false &&
+        defaultFunc) {
+      gadash.util.bindMethod(this, defaultFunc)(opt_args);
+    }
+  } else if (defaultFunc) {
+    gadash.util.bindMethod(this, defaultFunc)(opt_args);
+  }
+};
+
+
+/**
+ * Common method to display errors. This method is here so that any API
+ * queries can use it.
+ * Checks to see if there is an element with the ID of errors.
+ * If not, a div is created with this ID.
+ * The error message is formatted and printed to this div.
+ * @param {String} error The error object returned by the API.
+ */
+gadash.onErrorDefault = function(error) {
+  var errorDiv = document.getElementById('errors');
+
+  // Create error div if not already made.
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.setAttribute('id', 'errors');
+    errorDiv.innerHTML = 'ERRORS:' + '<br />';
+    document.body.appendChild(errorDiv);
+  }
+
+  // TODO(nm): Need better error handling. + html escape.
+  // Prints GaQuery elementId and message to error div.
+  errorDiv.innerHTML += ' error: ' + error.code + ' ' +
+      error.message + '<br />';
+  //errorDiv.innerHTML += this.config.elementId + ' error: ' +
+  //    message + '<br />';
+};
+
+
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
+ * @author shan.aminzadeh@gmail.com (Shan Aminzadeh)
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ * @author laurent1jacquot@gmail.com (Laurent Jacquot)
+ * @author ooahmad@gmail.com (Osama Ahmad)
+ *
+ * @fileoverview
+ * Provides the CoreQuery object that simplifies querying the
+ * Google Analytics Core Reporting API.
+ */
+
+
+// Core namespace.
+gadash.core = gadash.core || {};
+
+
+/**
+ * Core Query Builder. This returns a basic object to query the Core Reporting
+ * API. Developers must override the onSuccess handler to manage the results of
+ * the API. Usage:
+ *
+ * gadash.getCoreQuery({
+ *   'query': {
+ *     'lastNdays': 28,
+ *     'ids': 'ga:1174',
+ *     'metrics': 'ga:pageviews'
+ *   },
+ *   'onSuccess': handleData
+ * });
+ *
+ * function handleData(results) {
+ *   console.log(results);
+ * }
+ *
+ * @param {Object=} opt_config An optional query configuration object.
+ * @return {gadash.GaQuery} A GaQuery object configured to query the
+ *     Core Reporting API.
+ */
+gadash.getCoreQuery = function(opt_config) {
+  return new gadash.GaQuery({
+    'onRequestDefault': gadash.core.onRequestDefault,
+    'onErrorDefault': gadash.onErrorDefault
+  }).setConfig(opt_config);
+};
+
+
+/**
+ * Requests data for the Core Reporting API. This first updates the
+ * dates for the configuration object. It then creates a query based
+ * on the query parameter in the config object. Finally it executes the
+ * query and sets the callback to this.callback.
+ * @this {gadash.GaQuery} The GaQuery object.
+ */
+gadash.core.onRequestDefault = function() {
+  this.config.actualQuery = gadash.core.getCoreQueryObj(this.config);
+  var request = gapi.client.analytics.data.ga.get(this.config.actualQuery);
+  request.execute(gadash.util.bindMethod(this, this.callback));
+};
+
+
+/**
+ * Returns the actual query values issued to the Google Analytics Core
+ * reporting API as an object. This figures out the default dates.
+ * It also removes any unused keys. It also properly maps camel
+ * cased values into their hyphenated equivalents.
+ * @param {object} config The configuration object.
+ * @return {Object} A new object that for the actual query parameters that
+ *     should be sent to the GA API.
+ */
+gadash.core.getCoreQueryObj = function(config) {
+  var actualQuery = {};
+
+  if (config.query.ids) {
+    actualQuery.ids = config.query.ids;
+  }
+
+  if (config.query.metrics) {
+    actualQuery.metrics = config.query.metrics.split(' ').join(',');
+  }
+
+  if (config.query.dimensions) {
+    actualQuery.dimensions = config.query.dimensions.split(' ').join(',');
+  }
+
+  if (config.query.filters) {
+    actualQuery.filters = config.query.filters;
+  }
+
+  if (config.query.segment) {
+    actualQuery.segment = config.query.segment;
+  }
+
+  if (config.query.sort) {
+    actualQuery.sort = config.query.sort.split(' ').join(',');
+  }
+
+  if (config.query.startIndex) {
+    actualQuery['start-index'] = config.query.startIndex;
+  }
+  if (config.query.maxResults) {
+    actualQuery['max-results'] = config.query.maxResults;
+  }
+
+  /* Handles setting default and lastNdays dates.
+   * If lastNdays has been set, Updates the start and end date.
+   * If neither start not end date is set, a default of the last
+   * 28 days is used. Otherwise the original dates are used.
+   */
+  if (config.query.lastNdays) {
+    actualQuery['end-date'] = gadash.util.lastNdays(0);
+    actualQuery['start-date'] = gadash.util.lastNdays(config.query.lastNdays);
+
+  } else if (!config.query.startDate || !config.query.endDate) {
+    // Provide a default date range of last 28 days.
+    actualQuery['end-date'] = gadash.util.lastNdays(0);
+    actualQuery['start-date'] = gadash.util.lastNdays(28);
+
+  } else {
+    // Both exist. Move the dates over.
+    actualQuery['end-date'] = config.query.endDate;
+    actualQuery['start-date'] = config.query.startDate;
+  }
+
+  return actualQuery;
+};
+
+
+/**
+ * Handles setting default and lastNdays dates.
+ * If lastNdays has been set, Updates the start and end date.
+ * If neither start not end date is set, a default of the last
+ * 28 days is used.
+ * @param {Object} config A config object.
+ * @this Points to the GaQuery object.
+ */
+gadash.core.setDefaultDates = function(config) {
+  if (config['lastNdays']) {
+    config.query['endDate'] = gadash.util.lastNdays(0);
+    config.query['startDate'] =
+        gadash.util.lastNdays(config['lastNdays']);
+  } else {
+    if (!config.query['startDate'] || !config.query['endDate']) {
+      // Provide a default date range of last 28 days.
+      config.query['endDate'] = gadash.util.lastNdays(0);
+      config.query['startDate'] = gadash.util.lastNdays(28);
+    }
+  }
+};
 
 // Copyright 2012 Google Inc. All Rights Reserved.
 
@@ -1949,6 +2074,421 @@ gadash.gviz.columnChart = {
     chartArea: {'width': '90%'}
   }
 };
+
+// Copyright 2012 Google Inc. All Rights Reserved.
+
+/* Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+/**
+ * @author nickski15@gmail.com (Nick Mihailovski)
+ *
+ * @fileoverview
+ * Provides the gadash.getProfileSelect(elementId) control to allow users to
+ * select an account, web property, and finally a profile. The contorl can then
+ * be used to retrieve the user selected table id. This can then be used with
+ * the various reporting APIs.
+ */
+
+
+/**
+ * Namespace for all ui controls.
+ */
+gadash.ui = gadash.ui || {};
+
+
+/**
+ * Namespace for this specific account control.
+ */
+gadash.ui.acct = gadash.ui.acct || {};
+
+
+/**
+ * Object to cache various requests.
+ */
+gadash.ui.acct.cache = {};
+
+
+/**
+ * Returns a new account select element.
+ * @param {String} elementId The Id of the element in which to render
+ *     this object.
+ * @return {gadash.ui.ProfileSelect} A new account select object.
+ */
+gadash.getProfileSelect = function(elementId) {
+  return new gadash.ui.ProfileSelect(elementId);
+};
+
+
+
+/**
+ * Create a new ProfileSelect object that allows users to visually select
+ * account, web properties, and finally profiles. This dynamically
+ * replaces the contents of elementId with a set of controls.
+ * @param {String} elementId The ID of the containing div in which to render
+ *     this control.
+ * @constructor.
+ */
+gadash.ui.ProfileSelect = function(elementId) {
+  this.elementId = elementId;
+  this.selected = {};
+  this.isFromLoad = false;
+
+  this.initView(elementId);
+
+  if (gadash.isLoaded) {
+    this.initLoad();
+  } else {
+    gadash.util.pubsub.subscribe(
+        gadash.util.pubsub.libsLoaded,
+        gadash.util.bindMethod(this, this.initLoad));
+  }
+};
+
+
+/**
+ * Adds handlers and loads accounts.
+ */
+gadash.ui.ProfileSelect.prototype.initLoad = function() {
+
+  var selected = gadash.util.load(this.elementId);
+  if (selected) {
+    this.selected = selected;
+    this.isFromLoad = true;
+  }
+
+  this.addChangeHandler('acct-select');
+  this.addChangeHandler('property-select');
+  this.addChangeHandler('profile-select');
+  this.loadAccounts();
+};
+
+
+/**
+ * Add hadnlers to each select element.
+ * @param {String} selectId The ID of the element to add a handler.
+ * @this points to the ProfileSelect instance.
+ */
+gadash.ui.ProfileSelect.prototype.addChangeHandler = function(selectId) {
+  document.getElementById(this.getId_(selectId)).addEventListener('change',
+      gadash.util.bindMethod(this, this.getChangeHandler(selectId)));
+};
+
+
+/**
+ * Returns the selected table ID as a string.
+ * @return {String} The selected profileId.
+ */
+gadash.ui.ProfileSelect.prototype.getTableId = function() {
+  return 'ga:' + this.selected.profileId;
+};
+
+
+/**
+ * Returns the selected table ID as a CoreQuery config object.
+ * This is useful for adding directly in the each CoreQuery set method.
+ * @return {Object} The profileId set in a Core Query config object.
+ */
+gadash.ui.ProfileSelect.prototype.getTableIdConfig = function() {
+  return {
+    query: {
+      ids: this.getTableId()
+    }
+  };
+};
+
+
+/**
+ * Returns a namespaced id for this control. The ID of the element for this
+ * control is used as a namespace.
+ * @param {String} id The ID to namespace.
+ * @return {String} The namespaced ID.
+ * @private.
+ */
+gadash.ui.ProfileSelect.prototype.getId_ = function(id) {
+  return this.elementId + '-' + id;
+};
+
+
+/**
+ * Adds the HTML controls to the UI.
+ */
+gadash.ui.ProfileSelect.prototype.initView = function() {
+  document.getElementById(this.elementId).innerHTML = [
+    '<div style="margin-top:5px">Select an account: ',
+    '<select id="', this.getId_('acct-select'), '">',
+    '<option>Loading...</option></select></div>',
+    '<div style="margin-top:5px">Select a property: ',
+    '<select id="', this.getId_('property-select'), '">',
+    '<option>Loading...</option></select></div>',
+    '<div style="margin-top:5px">Select a profile: ',
+    '<select id="', this.getId_('profile-select'), '">',
+    '<option>Loading...</option></select></div>'
+  ].join('');
+};
+
+
+/**
+ * Load accounts from the Management API.
+ * This is the inital traversal of the account hiearchy.
+ */
+gadash.ui.ProfileSelect.prototype.loadAccounts = function() {
+  gapi.client.analytics.management.accounts.list().execute(
+      gadash.util.bindMethod(this, this.handleAccounts));
+};
+
+
+/**
+ * Handle accounts from the Management API.
+ * @param {Object} results The results object returned from the API.
+ */
+gadash.ui.ProfileSelect.prototype.handleAccounts = function(results) {
+  if (!this.isError(results)) {
+
+    if (!this.isFromLoad) {
+      this.selected.accountId = results.items[0].id;
+    }
+
+    gadash.ui.acct.sortResults(results);
+
+    document.getElementById(this.getId_('acct-select')).innerHTML =
+        gadash.ui.acct.getOptionsFromResults(results, this.selected.accountId);
+
+    this.loadProperties();
+  }
+};
+
+
+/**
+ * Returns whether an error occured.
+ * @param {Object} results The results from the API.
+ * @return {Boolean} True if an error occured.
+ */
+gadash.ui.ProfileSelect.prototype.isError = function(results) {
+  if (results.error) {
+
+    var message = 'There was an API error in the account picker: ' +
+        results.error.message;
+    gadash.util.displayError(message);
+    return true;
+
+  } else if (!results.items || !results.items.length) {
+    switch (results.kind) {
+      case 'analytics#account':
+        document.getElementById(this.getId_('acct-select')).innerHTML =
+            gadash.ui.acct.getOption('none', 'No account found');
+
+      case 'analytics#webproperty':
+        document.getElementById(this.getId_('acct-select')).innerHTML =
+            gadash.ui.acct.getOption('none', 'No properties found');
+
+      case 'analytics#profile':
+        document.getElementById(this.getId_('acct-select')).innerHTML =
+            gadash.ui.acct.getOption('none', 'No profiles found');
+    }
+    return true;
+  }
+  return false;
+};
+
+
+/**
+ * Handler to manage changes on dropdowns.
+ * @param {String} selectId The selectId to which to add a change handler.
+ * @return {function} Returns a the handler function.
+ */
+gadash.ui.ProfileSelect.prototype.getChangeHandler = function(selectId) {
+  return function(evt) {
+    switch (selectId) {
+      case 'acct-select':
+        this.selected.accountId = evt.target.value;
+        this.loadProperties();
+        break;
+
+      case 'property-select':
+        this.selected.propertyId = evt.target.value;
+        this.loadProfiles();
+        break;
+
+      case 'profile-select':
+        this.selected.profileId = evt.target.value;
+        gadash.util.save(this.elementId, this.selected);
+        break;
+    }
+  }
+};
+
+
+/**
+ * Load properties from the Management API.
+ */
+gadash.ui.ProfileSelect.prototype.loadProperties = function() {
+  var results = this.loadFromCache(this.selected.accountId);
+  if (results) {
+    this.handleProperties(results);
+
+  } else {
+    gapi.client.analytics.management.webproperties.list({
+      'accountId': this.selected.accountId}).execute(
+        gadash.util.bindMethod(this, this.handleProperties));
+  }
+};
+
+
+/**
+ * Handles properties from Management API.
+ * @param {Object} results teh results object returned from the API.
+ */
+gadash.ui.ProfileSelect.prototype.handleProperties = function(results) {
+  if (!this.isError(results)) {
+
+    gadash.ui.acct.sortResults(results);
+    this.saveToCache(this.selected.accountId, results);
+
+    if (!this.isFromLoad) {
+      this.selected.propertyId = results.items[0].id;
+    }
+
+    document.getElementById(this.getId_('property-select')).innerHTML =
+        gadash.ui.acct.getOptionsFromResults(results,
+            this.selected.propertyId);
+
+    this.loadProfiles();
+  }
+};
+
+
+/**
+ * Load profiles from the Management API.
+ */
+gadash.ui.ProfileSelect.prototype.loadProfiles = function() {
+  var results = this.loadFromCache(this.selected.propertyId);
+  if (results) {
+    this.handleProfiles(results);
+
+  } else {
+    gapi.client.analytics.management.profiles.list({
+      'accountId': this.selected.accountId,
+      'webPropertyId': this.selected.propertyId}).execute(
+        gadash.util.bindMethod(this, this.handleProfiles));
+  }
+};
+
+
+/**
+ * Handles profiles from Management API.
+ * @param {Object} results teh results object returned from the API.
+ */
+gadash.ui.ProfileSelect.prototype.handleProfiles = function(results) {
+  if (!this.isError(results)) {
+
+    gadash.ui.acct.sortResults(results);
+    this.saveToCache(this.selected.propertyId, results);
+
+    if (!this.isFromLoad) {
+      this.selected.profileId = results.items[0].id;
+    }
+
+    document.getElementById(this.getId_('profile-select')).innerHTML =
+        gadash.ui.acct.getOptionsFromResults(results,
+            this.selected.profileId);
+
+    gadash.util.save(this.elementId, this.selected);
+    this.isFromLoad = false;
+  }
+};
+
+
+/**
+ * Returns a string of options that can be used inside of a dropdown.
+ * @param {Object} results The successful result object returned from the
+ *     management API.
+ * @param {String=} opt_selectedId The id of the selected element.
+ * @return {String} A list of option elements to be used in a select element.
+ */
+gadash.ui.acct.getOptionsFromResults = function(results, opt_selectedId) {
+
+  var selectedId = opt_selectedId || '';
+
+  var output = [];
+  for (var i = 0, item; item = results.items[i]; ++i) {
+    var isSelected = item.id == selectedId ? true : false;
+    output.push(gadash.ui.acct.getOption(item.id, item.name, isSelected));
+  }
+  return output.join('');
+};
+
+
+/**
+ * Returns a single option element as a string to be added to a select element.
+ * @param {Boolean} id The id of the option.
+ * @param {String} name The display name of the option.
+ * @param {Boolean=} opt_isSelected Whether the option should be selected.
+ * @return {String} The HTML of the option element as a string.
+ */
+gadash.ui.acct.getOption = function(id, name, opt_isSelected) {
+  var selected = opt_isSelected ? ' selected ' : '';
+
+  return ['<option value="', id, '"', selected, '>',
+    gadash.util.htmlEscape(name), '</option>'
+  ].join('');
+};
+
+
+/**
+ * Stores an object in the gadash.ui.acct.cache object. Uses this objets
+ * elementId as a namespce.
+ * @param {String} key The cache key.
+ * @param {Object} data The object to store.
+ */
+gadash.ui.ProfileSelect.prototype.saveToCache = function(key, data) {
+  // Create the namespaced cache if it doesn exist.
+  gadash.ui.acct.cache[this.elementId] =
+      gadash.ui.acct.cache[this.elementId] || {};
+
+  gadash.ui.acct.cache[this.elementId][key] = data;
+};
+
+
+/**
+ * Returns an object fmor the gadash.ui.acct.cache object. Uses this objets
+ * elementId as a namespce.
+ * @param {String} key The cache key.
+ * @return {Object} The object in the cache.
+ */
+gadash.ui.ProfileSelect.prototype.loadFromCache = function(key) {
+  if (gadash.ui.acct.cache[this.elementId]) {
+    return gadash.ui.acct.cache[this.elementId][key];
+  }
+};
+
+
+/**
+ * Sorts the items in the results by account name in decending order.
+ * @param {Object} results The result object returned from the API.
+ */
+gadash.ui.acct.sortResults = function(results) {
+  results.items.sort(function(a, b) {
+    if (a.name.toLowerCase() < b.name.toLowerCase()) {
+      return -1;
+    } else if (a.name.toLowerCase() > b.name.toLowerCase()) {
+      return 1;
+    }
+    return 0;
+  });
+};
+
 
 // Copyright 2013 Google Inc. All Rights Reserved.
 

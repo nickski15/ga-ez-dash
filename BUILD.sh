@@ -37,10 +37,11 @@ echo 'Building...'
 cat \
   src/js/auth.js \
   src/js/control.js \
+  src/js/util.js \
   src/js/query.js \
   src/js/core.js \
-  src/js/util.js \
   src/js/gviz.js \
+  src/js/ui.profile-select.js \
   src/js/component.js > "out/$out_name.js"
 
 
@@ -49,10 +50,11 @@ java -jar "$closurePath" \
   --compilation_level SIMPLE_OPTIMIZATIONS \
   --js="src/js/auth.js" \
   --js="src/js/control.js" \
+  --js="src/js/util.js" \
   --js="src/js/query.js" \
   --js="src/js/core.js" \
-  --js="src/js/util.js" \
   --js="src/js/gviz.js" \
+  --js="src/js/ui.profile-select.js" \
   --js="src/js/component.js" \
   --js_output_file="out/$out_name-min.js"
 

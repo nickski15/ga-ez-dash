@@ -18,7 +18,7 @@
  * @author nickski15@gmail.com (Nick Mihailovski)
  *
  * @fileoverview
- * Provides the gadash.ui.AcctSelect control to allow users to
+ * Provides the gadash.getProfileSelect(elementId) control to allow users to
  * select an account, web property, and finally a profile. The contorl can then
  * be used to retrieve the user selected table id. This can then be used with
  * the various reporting APIs.
@@ -43,21 +43,32 @@ gadash.ui.acct = gadash.ui.acct || {};
 gadash.ui.acct.cache = {};
 
 
+/**
+ * Returns a new account select element.
+ * @param {String} elementId The Id of the element in which to render
+ *     this object.
+ * @return {gadash.ui.ProfileSelect} A new account select object.
+ */
+gadash.getProfileSelect = function(elementId) {
+  return new gadash.ui.ProfileSelect(elementId);
+};
+
+
 
 /**
- * Create a new AcctSelect object that allows users to visually select
+ * Create a new ProfileSelect object that allows users to visually select
  * account, web properties, and finally profiles. This dynamically
- * replaces the contents of divId with a set of controls.
- * @param {String} divId The ID of the containing div in which to render
+ * replaces the contents of elementId with a set of controls.
+ * @param {String} elementId The ID of the containing div in which to render
  *     this control.
  * @constructor.
  */
-gadash.ui.AcctSelect = function(divId) {
-  this.divId = divId;
+gadash.ui.ProfileSelect = function(elementId) {
+  this.elementId = elementId;
   this.selected = {};
   this.isFromLoad = false;
 
-  this.initView(divId);
+  this.initView(elementId);
 
   if (gadash.isLoaded) {
     this.initLoad();
@@ -72,9 +83,9 @@ gadash.ui.AcctSelect = function(divId) {
 /**
  * Adds handlers and loads accounts.
  */
-gadash.ui.AcctSelect.prototype.initLoad = function() {
+gadash.ui.ProfileSelect.prototype.initLoad = function() {
 
-  var selected = gadash.util.load(this.divId);
+  var selected = gadash.util.load(this.elementId);
   if (selected) {
     this.selected = selected;
     this.isFromLoad = true;
@@ -90,9 +101,9 @@ gadash.ui.AcctSelect.prototype.initLoad = function() {
 /**
  * Add hadnlers to each select element.
  * @param {String} selectId The ID of the element to add a handler.
- * @this points to the AcctSelect instance.
+ * @this points to the ProfileSelect instance.
  */
-gadash.ui.AcctSelect.prototype.addChangeHandler = function(selectId) {
+gadash.ui.ProfileSelect.prototype.addChangeHandler = function(selectId) {
   document.getElementById(this.getId_(selectId)).addEventListener('change',
       gadash.util.bindMethod(this, this.getChangeHandler(selectId)));
 };
@@ -102,7 +113,7 @@ gadash.ui.AcctSelect.prototype.addChangeHandler = function(selectId) {
  * Returns the selected table ID as a string.
  * @return {String} The selected profileId.
  */
-gadash.ui.AcctSelect.prototype.getTableId = function() {
+gadash.ui.ProfileSelect.prototype.getTableId = function() {
   return 'ga:' + this.selected.profileId;
 };
 
@@ -112,7 +123,7 @@ gadash.ui.AcctSelect.prototype.getTableId = function() {
  * This is useful for adding directly in the each CoreQuery set method.
  * @return {Object} The profileId set in a Core Query config object.
  */
-gadash.ui.AcctSelect.prototype.getTableIdConfig = function() {
+gadash.ui.ProfileSelect.prototype.getTableIdConfig = function() {
   return {
     query: {
       ids: this.getTableId()
@@ -128,16 +139,16 @@ gadash.ui.AcctSelect.prototype.getTableIdConfig = function() {
  * @return {String} The namespaced ID.
  * @private.
  */
-gadash.ui.AcctSelect.prototype.getId_ = function(id) {
-  return this.divId + '-' + id;
+gadash.ui.ProfileSelect.prototype.getId_ = function(id) {
+  return this.elementId + '-' + id;
 };
 
 
 /**
  * Adds the HTML controls to the UI.
  */
-gadash.ui.AcctSelect.prototype.initView = function() {
-  document.getElementById(this.divId).innerHTML = [
+gadash.ui.ProfileSelect.prototype.initView = function() {
+  document.getElementById(this.elementId).innerHTML = [
     '<div style="margin-top:5px">Select an account: ',
     '<select id="', this.getId_('acct-select'), '">',
     '<option>Loading...</option></select></div>',
@@ -155,7 +166,7 @@ gadash.ui.AcctSelect.prototype.initView = function() {
  * Load accounts from the Management API.
  * This is the inital traversal of the account hiearchy.
  */
-gadash.ui.AcctSelect.prototype.loadAccounts = function() {
+gadash.ui.ProfileSelect.prototype.loadAccounts = function() {
   gapi.client.analytics.management.accounts.list().execute(
       gadash.util.bindMethod(this, this.handleAccounts));
 };
@@ -165,7 +176,7 @@ gadash.ui.AcctSelect.prototype.loadAccounts = function() {
  * Handle accounts from the Management API.
  * @param {Object} results The results object returned from the API.
  */
-gadash.ui.AcctSelect.prototype.handleAccounts = function(results) {
+gadash.ui.ProfileSelect.prototype.handleAccounts = function(results) {
   if (!this.isError(results)) {
 
     if (!this.isFromLoad) {
@@ -187,7 +198,7 @@ gadash.ui.AcctSelect.prototype.handleAccounts = function(results) {
  * @param {Object} results The results from the API.
  * @return {Boolean} True if an error occured.
  */
-gadash.ui.AcctSelect.prototype.isError = function(results) {
+gadash.ui.ProfileSelect.prototype.isError = function(results) {
   if (results.error) {
 
     var message = 'There was an API error in the account picker: ' +
@@ -220,7 +231,7 @@ gadash.ui.AcctSelect.prototype.isError = function(results) {
  * @param {String} selectId The selectId to which to add a change handler.
  * @return {function} Returns a the handler function.
  */
-gadash.ui.AcctSelect.prototype.getChangeHandler = function(selectId) {
+gadash.ui.ProfileSelect.prototype.getChangeHandler = function(selectId) {
   return function(evt) {
     switch (selectId) {
       case 'acct-select':
@@ -235,7 +246,7 @@ gadash.ui.AcctSelect.prototype.getChangeHandler = function(selectId) {
 
       case 'profile-select':
         this.selected.profileId = evt.target.value;
-        gadash.util.save(this.divId, this.selected);
+        gadash.util.save(this.elementId, this.selected);
         break;
     }
   }
@@ -245,7 +256,7 @@ gadash.ui.AcctSelect.prototype.getChangeHandler = function(selectId) {
 /**
  * Load properties from the Management API.
  */
-gadash.ui.AcctSelect.prototype.loadProperties = function() {
+gadash.ui.ProfileSelect.prototype.loadProperties = function() {
   var results = this.loadFromCache(this.selected.accountId);
   if (results) {
     this.handleProperties(results);
@@ -262,7 +273,7 @@ gadash.ui.AcctSelect.prototype.loadProperties = function() {
  * Handles properties from Management API.
  * @param {Object} results teh results object returned from the API.
  */
-gadash.ui.AcctSelect.prototype.handleProperties = function(results) {
+gadash.ui.ProfileSelect.prototype.handleProperties = function(results) {
   if (!this.isError(results)) {
 
     gadash.ui.acct.sortResults(results);
@@ -284,7 +295,7 @@ gadash.ui.AcctSelect.prototype.handleProperties = function(results) {
 /**
  * Load profiles from the Management API.
  */
-gadash.ui.AcctSelect.prototype.loadProfiles = function() {
+gadash.ui.ProfileSelect.prototype.loadProfiles = function() {
   var results = this.loadFromCache(this.selected.propertyId);
   if (results) {
     this.handleProfiles(results);
@@ -302,7 +313,7 @@ gadash.ui.AcctSelect.prototype.loadProfiles = function() {
  * Handles profiles from Management API.
  * @param {Object} results teh results object returned from the API.
  */
-gadash.ui.AcctSelect.prototype.handleProfiles = function(results) {
+gadash.ui.ProfileSelect.prototype.handleProfiles = function(results) {
   if (!this.isError(results)) {
 
     gadash.ui.acct.sortResults(results);
@@ -313,9 +324,10 @@ gadash.ui.AcctSelect.prototype.handleProfiles = function(results) {
     }
 
     document.getElementById(this.getId_('profile-select')).innerHTML =
-        gadash.ui.acct.getOptionsFromResults(results, this.selected.profileId);
+        gadash.ui.acct.getOptionsFromResults(results,
+            this.selected.profileId);
 
-    gadash.util.save(this.divId, this.selected);
+    gadash.util.save(this.elementId, this.selected);
     this.isFromLoad = false;
   }
 };
@@ -359,27 +371,28 @@ gadash.ui.acct.getOption = function(id, name, opt_isSelected) {
 
 /**
  * Stores an object in the gadash.ui.acct.cache object. Uses this objets
- * divId as a namespce.
+ * elementId as a namespce.
  * @param {String} key The cache key.
  * @param {Object} data The object to store.
  */
-gadash.ui.AcctSelect.prototype.saveToCache = function(key, data) {
+gadash.ui.ProfileSelect.prototype.saveToCache = function(key, data) {
   // Create the namespaced cache if it doesn exist.
-  gadash.ui.acct.cache[this.divId] = gadash.ui.acct.cache[this.divId] || {};
+  gadash.ui.acct.cache[this.elementId] =
+      gadash.ui.acct.cache[this.elementId] || {};
 
-  gadash.ui.acct.cache[this.divId][key] = data;
+  gadash.ui.acct.cache[this.elementId][key] = data;
 };
 
 
 /**
  * Returns an object fmor the gadash.ui.acct.cache object. Uses this objets
- * divId as a namespce.
+ * elementId as a namespce.
  * @param {String} key The cache key.
  * @return {Object} The object in the cache.
  */
-gadash.ui.AcctSelect.prototype.loadFromCache = function(key) {
-  if (gadash.ui.acct.cache[this.divId]) {
-    return gadash.ui.acct.cache[this.divId][key];
+gadash.ui.ProfileSelect.prototype.loadFromCache = function(key) {
+  if (gadash.ui.acct.cache[this.elementId]) {
+    return gadash.ui.acct.cache[this.elementId][key];
   }
 };
 

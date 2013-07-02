@@ -1,0 +1,46 @@
+<!DOCTYPE>
+<html>
+<head><title>Google Analytics EZ Dashboard Demo</title></head>
+<body>
+  <h1>Google Analytics Easy Dashboard Profile Select Demo</h1>
+  <p>This is a simple demo for the
+     <a href="http://analytics-api-samples.googlecode.com/svn/trunk/src/reporting/javascript/ez-ga-dash/docs/user-documentation.html">
+       ga-dash library</a>.</p>
+
+  <p>This demo shows how to add a profile select control to the page.</p>
+
+  <!-- Display the auth control -->
+  <div id="gadash-auth">Loading ...</div>
+
+  <hr>
+  <div id="profile-select"></div>
+  <hr>
+  <p><button onclick="renderGraph()">Draw Charts</button><br></p>
+  <hr>
+  <div id="ui" style="display:none">
+    <h3>GA Line Chart</h3>
+    <div id='lineChartDiv'></div>
+  </div>
+
+<!-- Load the gadash.js library -->
+<script src="../../out/gadash-2.0.js"></script>
+<script>
+gadash.init({
+  apiKey: 'AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q',
+  clientId: '821751250764.apps.googleusercontent.com'
+});
+
+
+var profileSelect = gadash.getProfileSelect('profile-select');
+
+
+function renderGraph() {  //elementId, metrics, ids, config
+  gadash.getCoreLineChart('lineChartDiv', 'ga:visits,ga:pageviews',
+      profileSelect.getTableId()).execute();
+
+   // Display UI.
+   document.getElementById('ui').style.display = 'block';
+}
+</script>
+</body>
+</html>
