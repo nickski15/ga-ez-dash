@@ -254,7 +254,7 @@ gadash.getCoreChart = function(opt_config) {
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'lastNdays': 28
- * @param {Object} var_args The following arguments can be passed in order:
+ * @param {...Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
@@ -279,7 +279,7 @@ gadash.getCoreLineChart = function(var_args) {
  * or supplement properties of the configuration object.
  * Following default values are used for this object:
  *     for the start time / date range: 'lastNdays': 28.
- * @param {Object} var_args The following arguments can be passed in order:
+ * @param {...Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.GaQuery} this Returns a reference to the newly instantiated
@@ -328,7 +328,7 @@ gadash.getCorePieChart = function(var_args) {
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'lastNdays': 28.
- * @param {Object} var_args The following arguments can be passed in order:
+ * @param {...Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.GaQuery} a reference to the newly instantiated
@@ -354,7 +354,7 @@ gadash.getCoreBarChart = function(var_args) {
  * Following default values are used for this object:
  *     for the dimensions: 'ga:date',
  *     for the start time / date range: 'lastNdays': 28.
- * @param {Object} var_args The following arguments can be passed in order:
+ * @param {...Object} var_args The following arguments can be passed in order:
  *     elementId, metrics, ids, config. The config object can be passed as
  *     any of the parameters where any parameters that follow are ignored.
  * @return {gadash.GaQuery} a reference to the newly instantiated

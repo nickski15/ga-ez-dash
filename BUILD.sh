@@ -13,7 +13,7 @@
 #
 # Once the compiler is installed, modify this variable to
 # point to the compiler jar.
-closurePath="/Users/nm/work/js/closure/compiler-latest/compiler.jar"
+closurePath="/Users/nm/work/closure/compiler.jar"
 
 
 # Name of the output file.
@@ -39,6 +39,7 @@ cat \
   src/js/control.js \
   src/js/query.js \
   src/js/core.js \
+  src/js/realtime.js \
   src/js/util.js \
   src/js/gviz.js \
   src/js/component.js > "out/$out_name.js"
@@ -51,6 +52,7 @@ java -jar "$closurePath" \
   --js="src/js/control.js" \
   --js="src/js/query.js" \
   --js="src/js/core.js" \
+  --js="src/js/realtime.js" \
   --js="src/js/util.js" \
   --js="src/js/gviz.js" \
   --js="src/js/component.js" \
