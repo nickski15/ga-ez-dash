@@ -30,6 +30,34 @@
 var gadash = gadash || {};
 
 
+/**
+* List of functions that are queued for execution. This is only used
+* until all the libraries have fully loaded.
+* @type {Array}
+* @private
+*/
+gadash.commandQueue_ = [];
+
+
+/**
+* Iterates through all commands on the commandQueue and executes them.
+* @private
+*/
+gadash.executeCommandQueue_ = function() {
+  for (var i = 0, command; command = gadash.commandQueue_[i]; ++i) {
+    command();
+  }
+};
+
+
+/**
+ * Subscribes the executeCommandQueue_ to execute once the libraries have
+ * loaded.
+ */
+gadash.util.pubsub.subscribe(gadash.util.pubsub.libsLoaded,
+    gadash.executeCommandQueue_);
+
+
 
 /**
  * A Core GaQuery object is the base object to perform a Core Reporting API
@@ -96,7 +124,7 @@ gadash.GaQuery.prototype.execute = function(opt_config) {
     this.executeFunction_();
   } else {
     var executeFunction_ = gadash.util.bindMethod(this, this.executeFunction_);
-    gadash.commandQueue_.push(executeFunction_);
+    gadash.commandQueue_.push(renderFunction);
   }
   return this;
 };
