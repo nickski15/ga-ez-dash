@@ -14,7 +14,7 @@ Changelog
 ---------
 
 ### version 2.2.0
-- added web component support using toolkitchen.js
+- added web component support using polymer.js
 - new components:
   - ga-dashboard - binds controls to charts
   - ga-auth - handles auth

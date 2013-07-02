@@ -23,7 +23,7 @@ You are authorized as {{userEmail}} <button id="unAuthorizeButton">Logout</butto
 <script>
 var views = ['loading', 'authorized', 'unauthorized'];
 
-Toolkit.register(this, {
+Polymer.register(this, {
   userEmail: '',
   show: function(id) {
     for (var i = 0, view; view = views[i]; ++i) {
