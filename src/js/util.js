@@ -545,3 +545,100 @@ gadash.util.getLoaderUri = function() {
 };
 
 
+/**
+ * Namespace for pubsub module.
+ * Usage:
+ * gadash.util.pubsub.subscribe - used to subscribe a function to be executed
+ * gadash.util.pubsub.publish - used to broadcast an event and execute all
+ *     subscribed functions.
+ */
+gadash.util.pubsub = gadash.util.pubsub || {};
+
+
+/**
+ * Message for when the all the main libraries have loaded.
+ * @type {String}
+ */
+gadash.util.pubsub.libsLoaded = 'LIBS_LOADED';
+
+
+/**
+ * Used to store the relationship between messages and subscribed functions.
+ * @type {Object}
+ */
+gadash.util.pubsub.map = {};
+
+
+/**
+ * Subscribes a function to a particular message.
+ * @param {String} message The message to which the function func is
+ *     subscribed.
+ * @param {function} func The function to subscribe to a particular message.
+ */
+gadash.util.pubsub.subscribe = function(message, func) {
+  if (!gadash.util.pubsub.map[message]) {
+    gadash.util.pubsub.map[message] = [];
+  }
+  gadash.util.pubsub.map[message].push(func);
+};
+
+
+/**
+ * Publishes message. All subscribed functions are executed.
+ * @param {String} message The message to publish.
+ */
+gadash.util.pubsub.publish = function(message) {
+  if (gadash.util.pubsub.map[message] &&
+      gadash.util.pubsub.map[message].length) {
+    for (var i = 0, func; func = gadash.util.pubsub.map[message][i]; ++i) {
+      func();
+    }
+  }
+};
+
+
+/**
+ * TODO: Should be namespaced by user ID.
+ * Stores data in localstorage if avaliable.
+ * @param {string} key The key of the data to store.
+ * @param {Object} data The data to store.
+ */
+gadash.util.save = function(key, data) {
+  if (localStorage && JSON) {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+};
+
+
+/**
+ * Loads data from localstorage if avaliable.
+ * @param {string} key The key of the data to store.
+ * @return {Object} The data stored under the key.
+ */
+gadash.util.load = function(key) {
+  if (localStorage && JSON) {
+    return JSON.parse(localStorage.getItem(key));
+  }
+};
+
+
+/**
+ * Displays an error message to the user in a div with the ID of
+ * "errors". If this div doesn't exist, it is created and appeneded to.
+ * The message is html escaped by default.
+ * @param {String} message The error message to display.
+ */
+gadash.util.displayError = function(message) {
+  var errorDiv = document.getElementById('errors');
+
+  // Create error div if not already made.
+  if (!errorDiv) {
+    errorDiv = document.createElement('div');
+    errorDiv.style.color = 'red';
+    errorDiv.setAttribute('id', 'errors');
+    errorDiv.innerHTML = 'ERRORS:' + '<br>';
+    document.body.appendChild(errorDiv);
+  }
+
+  errorDiv.innerHTML += gadash.util.htmlEscape(message) + '<br>';
+};

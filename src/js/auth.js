@@ -246,7 +246,7 @@ gadash.auth.loadUserNameHander_ = function(response) {
 
   // Move to pub sub -or- custom event.
   gadash.isLoaded = true;
-  gadash.auth.executeCommandQueue_();
+  gadash.util.pubsub.publish(gadash.util.pubsub.libsLoaded);
 };
 
 
