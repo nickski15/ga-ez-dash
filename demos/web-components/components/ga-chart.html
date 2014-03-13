@@ -1,4 +1,6 @@
-<element name="ga-chart"
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-chart"
     attributes="
         type
         autoexecute
@@ -14,15 +16,11 @@
         startIndex
         maxResults
         config">
-
-
 <template>
 <style>
 @import url(//ajax.googleapis.com/ajax/static/modules/gviz/1.1/table/table.css);
-@host {
-  * {
-    display: block;
-  }
+:host {
+  display: block;
 }
 #myChart {
   display: inline-block;
@@ -34,7 +32,7 @@
 </template>
 
 <script>
-Polymer.register(this, {
+Polymer('ga-chart', {
   type: 'table', // default to type="table"
 
   ready: function() {
@@ -89,4 +87,4 @@ Polymer.register(this, {
 
 });
 </script>
-</element>
+</polymer-element>

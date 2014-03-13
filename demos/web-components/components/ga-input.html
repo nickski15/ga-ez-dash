@@ -1,12 +1,11 @@
-<element name="ga-input"
-    extends="input"
-    attributes="param type">
+<link rel="import" href="../bower_components/polymer/polymer.html">
 
+<polymer-element name="ga-input" extends="input" attributes="param type">
 <template>
   <input id="myInput" type="{{type}}" value="{{value}}"/>
 </template>
 <script>
-Polymer.register(this, {
+Polymer('ga-input', {
   // Default is a text input.
   // TODO(nm): try other control types.
   type: 'text',
@@ -30,5 +29,4 @@ Polymer.register(this, {
   }
 });
 </script>
-
-</element>
+</polymer-element>

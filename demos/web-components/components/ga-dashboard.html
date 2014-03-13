@@ -1,7 +1,9 @@
-<element name="ga-dashboard">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-dashboard">
 <template><content></content></template>
 <script>
-Polymer.register(this, {
+Polymer('ga-dashboard', {
 
   execute: function() {
     var query = {};
@@ -24,9 +26,8 @@ Polymer.register(this, {
       this.execute();
     });
   }
-
 });
 </script>
 
-</element>
+</polymer-element>
 

@@ -1,26 +1,16 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>GA Component Demo 2</title>
-<script src="../../out/polymer.min.js"></script>
-<script src="../../out/gadash-2.0.js"></script>
-
-<link rel="import" href="../../src/comp/ga-auth.html">
-<link rel="import" href="../../src/comp/ga-chart.html">
-<link rel="import" href="../../src/comp/ga-dashboard.html">
-<link rel="import" href="../../src/comp/ga-button.html">
-<link rel="import" href="../../src/comp/ga-input.html">
-<link rel="import" href="../../src/comp/ga-profile-select.html">
-
+  <head>
+  <title>GA Component Demo 2</title>
+  <script src="bower_components/platform/platform.js"></script>
+  <link rel="import" href="components/all.html">
 </head>
-
 <body>
   <h2>Super Simple</h2>
 
 <ga-dashboard>
-<ga-auth
-  apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
-  clientId="821751250764.apps.googleusercontent.com"></ga-auth>
+  <ga-auth apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
+           clientId="821751250764.apps.googleusercontent.com"></ga-auth>
 
   <hr>
   <ga-profile-select></ga-profile-select>
@@ -38,6 +28,5 @@
       startIndex="1"></ga-chart>
 
 </ga-dashboard>
-
 
 </body>

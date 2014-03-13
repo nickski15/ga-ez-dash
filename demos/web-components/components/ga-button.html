@@ -1,0 +1,17 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-button" extends="button" attributes="type" on-click="{{click}}">
+  <template>
+    <button><content></content></button>
+  </template>
+  <script>
+  Polymer('ga-button', {
+    type: 'execute',
+    click: function(event) {
+      this.send('execute');   // should it send the type???
+    }
+  });
+  </script>
+</polymer-element>
+
+
