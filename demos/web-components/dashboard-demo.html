@@ -1,21 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GA Component Demo</title>
-<script src="bower_components/platform/platform.js"></script>
-<script src="../../out/gadash-2.0.js"></script>
-
-<link rel="import" href="../../src/comp/ga-auth.html">
-<link rel="import" href="../../src/comp/ga-chart.html">
-<link rel="import" href="../../src/comp/ga-dashboard.html">
-<link rel="import" href="../../src/comp/ga-button.html">
-<link rel="import" href="../../src/comp/ga-input.html">
-<link rel="import" href="../../src/comp/ga-list.html">
-<link rel="import" href="../../src/comp/ga-profile-select.html">
-
-
+  <title>GA Component Demo</title>
+  <script src="bower_components/platform/platform.js"></script>
+  <link rel="import" href="components/all.html">
 </head>
-<body>
+<body unresolved>
 
 <h2>This is a simple GA Component Demo</h2>
 
@@ -35,10 +25,6 @@
   <ga-button type="execute">Draw Charts</ga-button><br>
   <hr>
 
-
-  <h2>Here's My Simple Dashboard!</h2>
-
-
   <h3>Visits & Pageviews Over Time</h3>
   <ga-chart id="myChart1"
       type="line"
@@ -55,7 +41,6 @@
       sort="-ga:visits"></ga-chart>
 
 </ga-dashboard>
-
 
 <script>
 

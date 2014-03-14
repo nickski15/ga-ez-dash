@@ -1,6 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<polymer-element name="ga-profile-select" extends="div">
+<polymer-element name="ga-profile-select">
   <template>
     <content></content>
     <div id="myControl"></div>
@@ -11,9 +11,7 @@
       this.profileSelect = gadash.getProfileSelect(this.$.myControl);
     },
     getQuery: function() {
-      return {
-        'ids': this.profileSelect.getTableId()
-      }
+      return {'ids': this.profileSelect.getTableId()};
     }
   });
   </script>

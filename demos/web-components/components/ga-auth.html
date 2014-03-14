@@ -2,65 +2,47 @@
 
 <polymer-element name="ga-auth" attributes="apiKey clientId">
 <template>
-<style>
-.hidden {
-  display: none;
-}
-.visible {
-  display: block;
-}
-</style>
-
-<div id="loading">Loading ...</div>
-<div id="unauthorized" class="hidden">
-  <button id="authorizeButton">Authorize Analytics</button>
-</div>
-<div id="authorized" class="hidden">
-You are authorized as {{userEmail}} <button id="unAuthorizeButton">Logout</button>
-</div>
+  <div id="loading" hidden?="{{!loading}}">Loading ...</div>
+  <template if="{{!loading}}">
+    <template if="{{!authorized}}">
+      <button on-click="{{authorize}}">Authorize Analytics</button>
+    </template>
+    <template if="{{authorized}}">
+      You are authorized as {{userEmail}} <button on-click="{{logout}}">Logout</button>
+    </template>
+  </template>
 </template>
-
 <script>
-var views = ['loading', 'authorized', 'unauthorized'];
-
 Polymer('ga-auth', {
   userEmail: '',
-  show: function(id) {
-    for (var i = 0, view; view = views[i]; ++i) {
-      var element = this.$[view];
-      if (element.id == id) {
-        element.classList.remove('hidden');
-        element.classList.add('visible');
-      } else {
-        element.classList.remove('visible');
-        element.classList.add('hidden');
-      }
-    }
-  },
+  authorized: false,
+  loading: true,
   ready: function() {
-
-    this.$.authorizeButton.addEventListener('click', gadash.auth.authorize);
-    this.$.unAuthorizeButton.addEventListener('click', gadash.auth.accountLogout);
-
-    this.handleUnAuthorized = gadash.util.bindMethod(this, function() {
-      this.show('unauthorized');
-      return false;
-    });
-
-    this.handleAuthorized = gadash.util.bindMethod(this, function() {
-      this.userEmail = gadash.userInfo.email;
-      this.show('authorized');
-      return false;
-    });
-
     if (this.apiKey && this.clientId) {
       gadash.init({
         apiKey: this.apiKey,
         clientId: this.clientId,
-        onUnAuthorized: this.handleUnAuthorized,
-        onAuthorized: this.handleAuthorized
+        onUnAuthorized: this.handleUnAuthorized.bind(this),
+        onAuthorized: this.handleAuthorized.bind(this)
       });
     }
+  },
+  authorize: function(e, detail, sender) {
+    gadash.auth.authorize();
+  },
+  logout: function(e, detail, sender) {
+    gadash.auth.accountLogout();
+  },
+  handleUnAuthorized: function() {
+    this.authorized = false;
+    this.loading = false;
+    return false;
+  },
+  handleAuthorized: function() {
+    this.userEmail = gadash.userInfo.email;
+    this.authorized = true;
+    this.loading = false;
+    return false;
   }
 });
 </script>
