@@ -1,7 +1,9 @@
-<element name="ga-chart"
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-chart"
     attributes="
         type
-        autoexecute
+        auto
         ids
         metrics
         dimensions
@@ -14,31 +16,26 @@
         startIndex
         maxResults
         config">
-
-
 <template>
+<style no-shim>
+  @import url(http://ajax.googleapis.com/ajax/static/modules/gviz/1.1/table/table.css);
+</style>
 <style>
-@import url(//ajax.googleapis.com/ajax/static/modules/gviz/1.1/table/table.css);
-@host {
-  * {
-    display: block;
-  }
+:host {
+  display: block;
 }
 #myChart {
   display: inline-block;
 }
 </style>
-
 <content></content>
 <div id="myChart"></div>
 </template>
-
 <script>
-Polymer.register(this, {
+Polymer('ga-chart', {
   type: 'table', // default to type="table"
-
+  auto: false,
   ready: function() {
-    var config = this.getConfig();
     var typeMap = {
       'table': gadash.getCoreChart,
       'line': gadash.getCoreLineChart,
@@ -46,16 +43,16 @@ Polymer.register(this, {
       'column': gadash.getCoreColumnChart,
       'pie': gadash.getCorePieChart
     };
-    this.gaQuery = typeMap[this.type](config);
 
-    // Run autoexecute.
-    if (this.autoexecute == '' || this.autoexecute) {
+    this.gaQuery = typeMap[this.type](this.getConfig());
+    this.gaQuery.config.elementId = this.$.myChart;
+
+    if (this.auto) {
       this.gaQuery.execute();
     }
   },
   getConfig: function() {
-    var element = this.$.myChart;
-    var ids = this.ids
+    var ids = this.ids;
     var metrics = this.metrics;
     var dimensions = this.dimensions;
     var filters = this.filters;
@@ -68,7 +65,7 @@ Polymer.register(this, {
     var maxResults = this.maxResults;
 
     var config = {
-      elementId: element,
+      //elementId: element,
       query: {
         ids: ids,
         metrics: metrics,
@@ -89,4 +86,4 @@ Polymer.register(this, {
 
 });
 </script>
-</element>
+</polymer-element>

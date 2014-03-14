@@ -1,0 +1,28 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-dashboard" on-execute="{{execute}}">
+  <template>
+    <content></content>
+  </template>
+  <script>
+    Polymer('ga-dashboard', {
+      execute: function() {
+        var query = {};
+        var controls = this.querySelectorAll('ga-input, ga-profile-select');
+        for (var i = 0, control; control = controls[i]; ++i) {
+          var val = control.getQuery();
+          gadash.util.extend(val, query);
+        }
+
+        var config = {
+          'query': query
+        };
+        var charts = this.querySelectorAll('ga-chart');
+        for (var i = 0, chart; chart = charts[i]; ++i) {
+          chart.gaQuery.execute(config);
+        }
+      }
+    });
+  </script>
+</polymer-element>
+

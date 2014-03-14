@@ -1,6 +1,7 @@
-<element name="ga-list" extends="ul">
-<template>
+<link rel="import" href="../bower_components/polymer/polymer.html">
 
+<polymer-element name="ga-list" extends="ul">
+<template>
 <style>
 ul {
   padding: 0;
@@ -28,7 +29,7 @@ ul > li {
 </template>
 
 <script>
-Polymer.register(this, {
+Polymer('ga-list', {
   ready: function() {
 
     // Manipulating nodeLists don't current work. So this is a manual way.
@@ -68,5 +69,5 @@ Polymer.register(this, {
 });
 </script>
 
-</element>
+</polymer-element>
 

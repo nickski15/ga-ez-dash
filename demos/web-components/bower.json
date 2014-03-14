@@ -1,0 +1,24 @@
+{
+  "name": "Google Analytics Polymer elements",
+  "version": "0.0.0",
+  "homepage": "http://nickski15.github.io/ga-ez-dash/",
+  "authors": [
+    "Eric Bidelman <ebidel@gmail.com>"
+  ],
+  "description": "web components to interface with Google Analytics data",
+  "keywords": [
+    "analytics"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.2.1"
+  }
+}

@@ -1,43 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head>
-<title>GA Component Demo 2</title>
-<script src="../../out/polymer.min.js"></script>
-<script src="../../out/gadash-2.0.js"></script>
-
-<link rel="import" href="../../src/comp/ga-auth.html">
-<link rel="import" href="../../src/comp/ga-chart.html">
-<link rel="import" href="../../src/comp/ga-dashboard.html">
-<link rel="import" href="../../src/comp/ga-button.html">
-<link rel="import" href="../../src/comp/ga-input.html">
-<link rel="import" href="../../src/comp/ga-profile-select.html">
-
+  <head>
+  <title>GA Component Demo 2</title>
+  <script src="bower_components/platform/platform.js"></script>
+  <link rel="import" href="components/all.html">
 </head>
-
-<body>
+<body unresolved>
   <h2>Super Simple</h2>
 
-<ga-dashboard>
-<ga-auth
-  apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
-  clientId="821751250764.apps.googleusercontent.com"></ga-auth>
+  <ga-dashboard id="dash">
+    <ga-auth apiKey="AIzaSyAPusS7gzp0bTla1ogGW_hJOwamaBwVT5Q"
+             clientId="821751250764.apps.googleusercontent.com"></ga-auth>
+    <hr>
+    <ga-profile-select></ga-profile-select>
+    <hr>
 
-  <hr>
-  <ga-profile-select></ga-profile-select>
-  <hr>
-  <ga-button type="execute">Draw Charts</ga-button><hr>
+    <ga-button type="execute">Draw Charts</ga-button><hr>
 
-  <ga-chart id="myTable"
-      type="table"
-      lastNdays="14"
-      metrics="ga:visits ga:pageviews"
-      dimensions="ga:source ga:medium ga:keyword"
-      filters="ga:source==google"
-      sort="-ga:visits"
-      maxResults="100"
-      startIndex="1"></ga-chart>
+    <ga-chart id="myTable" type="table" lastNdays="14"
+        metrics="ga:visits ga:pageviews"
+        dimensions="ga:source ga:medium ga:keyword"
+        filters="ga:source==google" sort="-ga:visits"
+        maxResults="100" startIndex="1"></ga-chart>
 
-</ga-dashboard>
-
+  </ga-dashboard>
 
 </body>

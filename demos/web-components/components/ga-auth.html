@@ -1,0 +1,50 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-auth" attributes="apiKey clientId">
+<template>
+  <div id="loading" hidden?="{{!loading}}">Loading ...</div>
+  <template if="{{!loading}}">
+    <template if="{{!authorized}}">
+      <button on-click="{{authorize}}">Authorize Analytics</button>
+    </template>
+    <template if="{{authorized}}">
+      You are authorized as {{userEmail}} <button on-click="{{logout}}">Logout</button>
+    </template>
+  </template>
+</template>
+<script>
+Polymer('ga-auth', {
+  userEmail: '',
+  authorized: false,
+  loading: true,
+  ready: function() {
+    if (this.apiKey && this.clientId) {
+      gadash.init({
+        apiKey: this.apiKey,
+        clientId: this.clientId,
+        onUnAuthorized: this.handleUnAuthorized.bind(this),
+        onAuthorized: this.handleAuthorized.bind(this)
+      });
+    }
+  },
+  authorize: function(e, detail, sender) {
+    gadash.auth.authorize();
+  },
+  logout: function(e, detail, sender) {
+    gadash.auth.accountLogout();
+  },
+  handleUnAuthorized: function() {
+    this.authorized = false;
+    this.loading = false;
+    return false;
+  },
+  handleAuthorized: function() {
+    this.userEmail = gadash.userInfo.email;
+    this.authorized = true;
+    this.loading = false;
+    return false;
+  }
+});
+</script>
+
+</polymer-element>

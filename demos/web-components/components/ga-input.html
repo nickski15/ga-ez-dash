@@ -1,0 +1,29 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="ga-input" attributes="param type">
+<template>
+  <input type="{{type}}" value="{{value}}">
+</template>
+<script>
+Polymer('ga-input', {
+  type: 'text',
+  value: '',
+  ready: function() {
+    if (this.type == 'date') {
+      if (this.param == 'startDate') {
+        this.value = gadash.util.lastNdays(28); // 4 week ago.
+      } else if (this.param == 'endDate') {
+        this.value = gadash.util.lastNdays(0); // today.
+      }
+    }
+  },
+  getQuery: function() {
+    var output = {};
+    if (this.param !== null) {
+      output[this.param] = this.value;
+    }
+    return output;
+  }
+});
+</script>
+</polymer-element>
