@@ -1197,7 +1197,7 @@ gadash.GaQuery.prototype.execute = function(opt_config) {
     this.executeFunction_();
   } else {
     var executeFunction_ = gadash.util.bindMethod(this, this.executeFunction_);
-    gadash.commandQueue_.push(renderFunction);
+    gadash.commandQueue_.push(executeFunction_);
   }
   return this;
 };
